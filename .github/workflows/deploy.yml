@@ -1,0 +1,55 @@
+name: Deploy a Hostinger
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Conectar y actualizar servidor
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          script: |
+            cd ~/public_html/portal-auditoria
+            git pull origin main
+            composer install --no-dev --optimize-autoloader
+            php artisan migrate --force
+            php artisan optimize
+            php artisan config:clear
+            php artisan view:clear
+            php artisan route:clear
+
+            # Crear carpetas necesarias si no existen
+            mkdir -p storage/app/public
+            mkdir -p storage/app/private
+            mkdir -p storage/framework/cache
+            mkdir -p storage/framework/sessions
+            mkdir -p storage/framework/views
+            mkdir -p storage/logs
+            mkdir -p bootstrap/cache
+            mkdir -p public/uploads
+            mkdir -p public/uploads/repositorio
+            mkdir -p public/uploads/entregas
+            mkdir -p public/uploads/devoluciones
+            mkdir -p public/uploads/actas
+
+            # Permisos de escritura en carpetas necesarias
+            chmod -R 775 storage
+            chmod -R 775 bootstrap/cache
+            chmod -R 775 public/uploads
+
+            # Propietario correcto para el servidor web
+            chown -R $USER:www-data storage
+            chown -R $USER:www-data bootstrap/cache
+            chown -R $USER:www-data public/uploads
+
+            # Permisos especificos de archivos
+            find storage -type f -exec chmod 664 {} \;
+            find public/uploads -type f -exec chmod 664 {} \;
+            find bootstrap/cache -type f -exec chmod 664 {} \;
