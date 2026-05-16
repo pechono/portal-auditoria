@@ -1,0 +1,102 @@
+<?php
+
+namespace App\Livewire\Docente;
+
+use Livewire\Component;
+use Livewire\WithFileUploads;
+use App\Models\Entrega;
+use App\Models\Grupo;
+
+class GestionEntregas extends Component
+{
+    use WithFileUploads;
+
+    public bool $mostrarModal    = false;
+    public int $entrega_id       = 0;
+    public string $estado        = '';
+    public string $comentario    = '';
+    public string $filtro_estado = 'enviada';
+    public $devolucion;
+    public ?float $nota          = null;
+
+    protected function rules(): array
+    {
+        return [
+            'estado'     => ['required', 'in:aprobada,con_observaciones,rechazada'],
+            'comentario' => ['nullable', 'string', 'max:1000'],
+            'devolucion' => ['nullable', 'file', 'mimes:pdf,doc,docx', 'max:10240'],
+            'nota'       => ['nullable', 'numeric', 'min:0', 'max:10'],
+        ];
+    }
+
+    protected function messages(): array
+    {
+        return [
+            'estado.required' => 'Debe seleccionar un estado.',
+            'nota.min'        => 'La nota mínima es 0.',
+            'nota.max'        => 'La nota máxima es 10.',
+        ];
+    }
+
+    public function abrirModal(int $entrega_id): void
+    {
+        $this->reset(['comentario', 'devolucion', 'nota', 'estado']);
+        $this->entrega_id   = $entrega_id;
+        $this->mostrarModal = true;
+    }
+
+    public function cerrarModal(): void
+    {
+        $this->mostrarModal = false;
+    }
+
+    public function procesarEntrega(): void
+    {
+        $this->validate();
+
+        $entrega = Entrega::find($this->entrega_id);
+
+        $devolucion_path = $entrega->devolucion_path;
+
+
+        if ($this->devolucion) {
+            $devolucion_path = $this->devolucion->store('devoluciones', 'uploads');
+        }
+
+        $entrega->update([
+            'estado'             => $this->estado,
+            'comentario_docente' => $this->comentario,
+            'devolucion_path'    => $devolucion_path,
+            'nota'               => $this->nota,
+            'revisado_por'       => auth()->id(),
+            'revisado_at'        => now(),
+        ]);
+
+
+                // Notificar al alumno
+        $entrega = Entrega::find($this->entrega_id);
+        foreach ($entrega->grupo->usuarios as $alumno) {
+            \App\Models\Notificacion::create([
+                'user_id' => $alumno->id,
+                'tipo'    => 'entrega_' . $this->estado,
+                'mensaje' => "Tu entrega de la etapa \"{$entrega->etapa->nombre}\" fue revisada con estado: " . ucfirst(str_replace('_', ' ', $this->estado)) . ". {$this->comentario}",
+                'leida'   => false,
+            ]);
+}
+
+        $this->cerrarModal();
+        session()->flash('mensaje', 'Entrega revisada correctamente.');
+    }
+
+    public function render()
+    {
+        $entregas = Entrega::with(['grupo.caso', 'etapa'])
+            ->where('estado', $this->filtro_estado)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('livewire.docente.gestion-entregas', [
+            'entregas' => $entregas,
+        ]);
+    }
+}
