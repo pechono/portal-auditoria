@@ -12,6 +12,18 @@
             <p class="text-indigo-400 text-xs mt-1">{{ $grupo->caso->descripcion }}</p>
         </div>
 
+        {{-- Manual del alumno --}}
+        <div class="mb-6 bg-white rounded-lg shadow p-4 flex justify-between items-center">
+            <div>
+                <p class="text-sm font-medium text-gray-800">Manual del alumno</p>
+                <p class="text-xs text-gray-400 mt-0.5">Guia de uso del portal — Version 1.0</p>
+            </div>
+            <a href="{{ asset('docs/manual-alumno.pdf') }}" target="_blank"
+                class="px-4 py-2 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+                Descargar manual
+            </a>
+        </div>
+
         {{-- Próxima etapa --}}
         @if ($proxima_etapa)
             <div class="bg-white rounded-lg shadow p-6 mb-6 border-l-4 border-indigo-500">
