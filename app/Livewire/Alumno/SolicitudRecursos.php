@@ -5,6 +5,8 @@ namespace App\Livewire\Alumno;
 use Livewire\Component;
 use App\Models\Solicitud;
 use App\Models\Documento;
+use App\Models\Etapa;
+use App\Models\Entrega;
 
 class SolicitudRecursos extends Component
 {
@@ -118,7 +120,22 @@ class SolicitudRecursos extends Component
                 'docs_libres'      => collect(),
                 'solicitudes_docs' => collect(),
                 'solicitudes_ents' => collect(),
+                'plan_aprobado'    => false,
             ]);
+        }
+
+        // Verificar si el plan está aprobado (etapa 2)
+        $etapa_plan = Etapa::where('caso_id', $grupo->caso_id)
+            ->where('numero', 2)
+            ->first();
+
+        $plan_aprobado = false;
+
+        if ($etapa_plan) {
+            $plan_aprobado = Entrega::where('grupo_id', $grupo->id)
+                ->where('etapa_id', $etapa_plan->id)
+                ->where('estado', 'aprobada')
+                ->exists();
         }
 
         $docs_libres = Documento::where('caso_id', $grupo->caso_id)
@@ -131,18 +148,17 @@ class SolicitudRecursos extends Component
             ->orderBy('created_at', 'desc')
             ->get();
 
-        
-
         $solicitudes_ents = Solicitud::where('grupo_id', $grupo->id)
             ->where('tipo', 'entrevista')
             ->orderBy('created_at', 'desc')
-             ->get();
+            ->get();
 
         return view('livewire.alumno.solicitud-recursos', [
             'grupo'            => $grupo,
             'docs_libres'      => $docs_libres,
             'solicitudes_docs' => $solicitudes_docs,
             'solicitudes_ents' => $solicitudes_ents,
+            'plan_aprobado'    => $plan_aprobado,
         ]);
     }
 }

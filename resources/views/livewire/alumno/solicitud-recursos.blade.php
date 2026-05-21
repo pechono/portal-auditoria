@@ -123,13 +123,20 @@
 
         {{-- Solicitar entrevistas --}}
         <div class="mb-8">
-            <div class="flex justify-between items-center mb-3">
-                <h3 class="text-lg font-semibold text-gray-800">Solicitar entrevistas</h3>
-                <button wire:click="abrirModalEntrevista"
-                    class="px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700">
-                    + Nueva solicitud
-                </button>
-            </div>
+            <div class="mb-8">
+    <div class="flex justify-between items-center mb-3">
+        <h3 class="text-lg font-semibold text-gray-800">Solicitar entrevistas</h3>
+        @if ($plan_aprobado)
+            <button wire:click="abrirModalEntrevista"
+                class="px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700">
+                + Nueva solicitud
+            </button>
+        @else
+            <span class="px-4 py-2 text-sm bg-gray-100 text-gray-400 rounded-lg">
+                🔒 Disponible cuando el plan sea aprobado
+            </span>
+        @endif
+    </div>
 
             <div class="bg-white rounded-lg shadow overflow-hidden">
                 <table class="min-w-full divide-y divide-gray-200">
