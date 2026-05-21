@@ -13,8 +13,8 @@ class DocenteSeeder extends Seeder
         User::create([
             'nombre'   => 'Pablo Nicolas',
             'apellido' => 'Balsamo',
-            'email'    => 'balsamo@auditoria.edu.ar',
-            'password' => Hash::make('docente1234'),
+            'email'    => 'pbalsamo@unlar.edu.ar',
+            'password' => Hash::make('FelipeyLynn@1'),
             'rol'      => 'docente',
             'activo'   => true,
         ]);
