@@ -100,8 +100,9 @@ class EntregaEtapa extends Component
             ->get();
 
         $entregas = Entrega::where('grupo_id', $grupo->id)
+            ->orderBy('created_at', 'asc')
             ->get()
-            ->keyBy('etapa_id');
+            ->groupBy('etapa_id');
 
         // Verificar si el plan está aprobado (etapa 2)
         $etapa_plan    = $etapas->firstWhere('numero', 2);
