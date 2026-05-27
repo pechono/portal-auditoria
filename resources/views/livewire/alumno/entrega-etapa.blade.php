@@ -63,19 +63,35 @@
                                 @elseif ($bloqueada)
                                     <span class="text-xs text-gray-400">🔒 Bloqueada</span>
                                 @elseif (!$entrega || in_array($entrega->estado, ['rechazada', 'con_observaciones']))
-                                    @if ($etapa->numero !== 5)
-                                        <button wire:click="abrirModal({{ $etapa->id }})"
-                                            class="px-3 py-1 text-xs bg-indigo-600 text-white rounded hover:bg-indigo-700">
-                                            Subir entrega
-                                        </button>
-                                    @endif
+                                    <div class="flex flex-col gap-1">
+                                        @if ($entrega && $entrega->devolucion_path)
+                                            <a href="{{ asset('uploads/' . $entrega->devolucion_path) }}" target="_blank"
+                                                class="px-3 py-1 text-xs bg-indigo-100 text-indigo-700 rounded hover:bg-indigo-200">
+                                                Ver devolución
+                                            </a>
+                                        @endif
+                                        @if ($etapa->numero !== 5)
+                                            <button wire:click="abrirModal({{ $etapa->id }})"
+                                                class="px-3 py-1 text-xs bg-indigo-600 text-white rounded hover:bg-indigo-700">
+                                                Subir entrega
+                                            </button>
+                                        @endif
+                                    </div>
                                 @elseif ($entrega->estado === 'enviada')
                                     <span class="text-xs text-yellow-600">Esperando revisión</span>
                                 @elseif ($entrega->estado === 'aprobada' && $entrega->archivo_path)
-                                    <a href="{{ asset('uploads/' . $entrega->archivo_path) }}" target="_blank"
-                                        class="px-3 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200">
-                                        Ver entrega
-                                    </a>
+                                    <div class="flex flex-col gap-1">
+                                        <a href="{{ asset('uploads/' . $entrega->archivo_path) }}" target="_blank"
+                                            class="px-3 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200">
+                                            Ver mi entrega
+                                        </a>
+                                        @if ($entrega->devolucion_path)
+                                            <a href="{{ asset('uploads/' . $entrega->devolucion_path) }}" target="_blank"
+                                                class="px-3 py-1 text-xs bg-indigo-100 text-indigo-700 rounded hover:bg-indigo-200">
+                                                Ver devolución
+                                            </a>
+                                        @endif
+                                    </div>
                                 @endif
                             </td>
                         </tr>
