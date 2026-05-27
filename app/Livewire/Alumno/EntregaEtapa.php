@@ -60,15 +60,22 @@ class EntregaEtapa extends Component
             return;
         }
 
-        $path = $this->archivo->store('entregas', 'uploads');
+        
+        $extension       = $this->archivo->getClientOriginalExtension();
+        $nombre_original = pathinfo($this->archivo->getClientOriginalName(), PATHINFO_FILENAME);
+        $nombre          = \Str::slug($nombre_original) . '-' . now()->format('Y-m-d-His') . '.' . $extension;
+        $path            = $this->archivo->storeAs('entregas', $nombre, 'uploads');
+
 
         Entrega::create([
             'grupo_id'       => $grupo->id,
             'etapa_id'       => $this->etapa_id,
             'archivo_path'   => $path,
-            'archivo_nombre' => $this->archivo->getClientOriginalName(),
+            'archivo_nombre' => $nombre,  // ← nombre legible
             'estado'         => 'enviada',
         ]);
+
+
 
         $this->cerrarModal();
         session()->flash('mensaje_entrega', 'Entrega enviada correctamente. El docente la revisará a la brevedad.');
@@ -93,8 +100,9 @@ class EntregaEtapa extends Component
             ->get();
 
         $entregas = Entrega::where('grupo_id', $grupo->id)
+            ->orderBy('created_at', 'asc')
             ->get()
-            ->keyBy('etapa_id');
+            ->groupBy('etapa_id');
 
         // Verificar si el plan está aprobado (etapa 2)
         $etapa_plan    = $etapas->firstWhere('numero', 2);

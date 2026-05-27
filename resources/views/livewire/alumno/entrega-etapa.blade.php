@@ -16,66 +16,110 @@
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Etapa</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Comentario docente</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nota</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Historial de entregas</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Acción</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200">
                     @foreach ($etapas as $etapa)
                         @php
-                            $entrega     = $entregas->get($etapa->id);
-                            $sin_entrega = $etapa->numero === 1;
-                            $bloqueada   = ($etapa->numero === 3 && !$plan_aprobado)
-                                        || (in_array($etapa->numero, [4, 5]) && !$etapa_3_aprobada);
+                            $entregas_etapa = $entregas->get($etapa->id, collect());
+                            $ultima_entrega = $entregas_etapa->last();
+                            $sin_entrega    = $etapa->numero === 1;
+                            $bloqueada      = ($etapa->numero === 3 && !$plan_aprobado)
+                                           || (in_array($etapa->numero, [4, 5]) && !$etapa_3_aprobada);
                         @endphp
                         <tr class="{{ $bloqueada ? 'opacity-50' : '' }}">
+                            {{-- Nombre etapa --}}
                             <td class="px-6 py-4">
                                 <p class="text-sm font-medium text-gray-900">
                                     {{ $etapa->numero }}. {{ $etapa->nombre }}
                                 </p>
                                 <p class="text-xs text-gray-400 mt-1">{{ $etapa->descripcion }}</p>
                             </td>
+
+                            {{-- Estado --}}
                             <td class="px-6 py-4">
                                 @if ($sin_entrega)
                                     <span class="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded-full">Informativa</span>
-                                @elseif (!$entrega)
+                                @elseif ($bloqueada)
+                                    <span class="px-2 py-1 text-xs bg-gray-100 text-gray-400 rounded-full">🔒 Bloqueada</span>
+                                @elseif (!$ultima_entrega)
                                     <span class="px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded-full">Sin entregar</span>
-                                @elseif ($entrega->estado === 'enviada')
-                                    <span class="px-2 py-1 text-xs bg-yellow-100 text-yellow-700 rounded-full">Enviada</span>
-                                @elseif ($entrega->estado === 'aprobada')
-                                    <span class="px-2 py-1 text-xs bg-green-100 text-green-700 rounded-full">Aprobada</span>
-                                @elseif ($entrega->estado === 'con_observaciones')
+                                @elseif ($ultima_entrega->estado === 'enviada')
+                                    <span class="px-2 py-1 text-xs bg-yellow-100 text-yellow-700 rounded-full">Esperando revisión</span>
+                                @elseif ($ultima_entrega->estado === 'aprobada')
+                                    <span class="px-2 py-1 text-xs bg-green-100 text-green-700 rounded-full">✓ Aprobada</span>
+                                @elseif ($ultima_entrega->estado === 'con_observaciones')
                                     <span class="px-2 py-1 text-xs bg-orange-100 text-orange-700 rounded-full">Con observaciones</span>
-                                @elseif ($entrega->estado === 'rechazada')
+                                @elseif ($ultima_entrega->estado === 'rechazada')
                                     <span class="px-2 py-1 text-xs bg-red-100 text-red-700 rounded-full">Rechazada</span>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 text-sm text-gray-500">
-                                {{ $entrega?->comentario_docente ?? '—' }}
+
+                            {{-- Historial de entregas --}}
+                            <td class="px-6 py-4">
+                                @if ($sin_entrega || $bloqueada || $entregas_etapa->isEmpty())
+                                    <span class="text-xs text-gray-400">—</span>
+                                @else
+                                    <div class="space-y-3">
+                                        @foreach ($entregas_etapa as $i => $entrega)
+                                            <div class="border border-gray-100 rounded-lg p-2 bg-gray-50">
+                                                <p class="text-xs font-medium text-gray-500 mb-1">
+                                                    Intento {{ $i + 1 }} — {{ $entrega->created_at->format('d/m/Y H:i') }}
+                                                </p>
+                                                <div class="flex flex-col gap-1">
+                                                    {{-- Mi entrega --}}
+                                                    <a href="{{ asset('uploads/' . $entrega->archivo_path) }}" target="_blank"
+                                                        class="flex items-center gap-1 text-xs text-indigo-600 hover:underline">
+                                                        📄 {{ $entrega->archivo_nombre }}
+                                                    </a>
+                                                    {{-- Devolución docente --}}
+                                                    @if ($entrega->devolucion_path)
+                                                        <a href="{{ asset('uploads/' . $entrega->devolucion_path) }}" target="_blank"
+                                                            class="flex items-center gap-1 text-xs text-green-600 hover:underline">
+                                                            📝 Devolución docente
+                                                        </a>
+                                                    @endif
+                                                    {{-- Comentario --}}
+                                                    @if ($entrega->comentario_docente)
+                                                        <p class="text-xs text-gray-500 italic mt-1">
+                                                            💬 {{ $entrega->comentario_docente }}
+                                                        </p>
+                                                    @endif
+                                                    {{-- Estado del intento --}}
+                                                    <span class="text-xs
+                                                        @if($entrega->estado === 'aprobada') text-green-600
+                                                        @elseif($entrega->estado === 'rechazada') text-red-500
+                                                        @elseif($entrega->estado === 'con_observaciones') text-orange-500
+                                                        @else text-yellow-600
+                                                        @endif">
+                                                        {{ ucfirst(str_replace('_', ' ', $entrega->estado)) }}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @endif
                             </td>
-                            <td class="px-6 py-4 text-sm text-gray-500">
-                                {{ $entrega?->nota ?? '—' }}
-                            </td>
+
+                            {{-- Acción --}}
                             <td class="px-6 py-4">
                                 @if ($sin_entrega)
                                     <span class="text-xs text-blue-500">Sin entrega requerida</span>
                                 @elseif ($bloqueada)
                                     <span class="text-xs text-gray-400">🔒 Bloqueada</span>
-                                @elseif (!$entrega || in_array($entrega->estado, ['rechazada', 'con_observaciones']))
-                                    @if ($etapa->numero !== 5)
-                                        <button wire:click="abrirModal({{ $etapa->id }})"
-                                            class="px-3 py-1 text-xs bg-indigo-600 text-white rounded hover:bg-indigo-700">
-                                            Subir entrega
-                                        </button>
-                                    @endif
-                                @elseif ($entrega->estado === 'enviada')
+                                @elseif ($etapa->numero === 5)
+                                    <span class="text-xs text-gray-400">Presencial</span>
+                                @elseif (!$ultima_entrega || in_array($ultima_entrega->estado, ['rechazada', 'con_observaciones']))
+                                    <button wire:click="abrirModal({{ $etapa->id }})"
+                                        class="px-3 py-1 text-xs bg-indigo-600 text-white rounded hover:bg-indigo-700">
+                                        Subir entrega
+                                    </button>
+                                @elseif ($ultima_entrega->estado === 'enviada')
                                     <span class="text-xs text-yellow-600">Esperando revisión</span>
-                                @elseif ($entrega->estado === 'aprobada' && $entrega->archivo_path)
-                                    <a href="{{ asset('uploads/' . $entrega->archivo_path) }}" target="_blank"
-                                        class="px-3 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200">
-                                        Ver entrega
-                                    </a>
+                                @elseif ($ultima_entrega->estado === 'aprobada')
+                                    <span class="text-xs text-green-600">✓ Completada</span>
                                 @endif
                             </td>
                         </tr>

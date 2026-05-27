@@ -60,7 +60,10 @@ class GestionEntregas extends Component
 
 
         if ($this->devolucion) {
-            $devolucion_path = $this->devolucion->store('devoluciones', 'uploads');
+        $extension       = $this->devolucion->getClientOriginalExtension();
+        $nombre_original = pathinfo($this->devolucion->getClientOriginalName(), PATHINFO_FILENAME);
+        $nombre          = \Str::slug($nombre_original) . '-' . now()->format('Y-m-d-His') . '.' . $extension;
+        $devolucion_path = $this->devolucion->storeAs('devoluciones', $nombre, 'uploads');
         }
 
         $entrega->update([
