@@ -7,7 +7,7 @@
 
     <div class="flex justify-between items-center mb-6">
         <h2 class="text-xl font-semibold text-gray-800">Grupos de trabajo</h2>
-        <button wire:click="abrirModal"
+        <button wire:click="abrirModal()"
             class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
             + Nuevo grupo
         </button>
@@ -21,6 +21,7 @@
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Caso</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Alumnos</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Acción</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-200">
@@ -45,10 +46,16 @@
                                 {{ ucfirst($grupo->estado) }}
                             </span>
                         </td>
+                        <td class="px-6 py-4">
+                            <button wire:click="abrirModal({{ $grupo->id }})"
+                                class="px-3 py-1 text-xs bg-gray-100 text-gray-600 rounded hover:bg-gray-200">
+                                Editar
+                            </button>
+                        </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500">
+                        <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">
                             No hay grupos creados todavía.
                         </td>
                     </tr>
@@ -60,7 +67,9 @@
     @if ($mostrarModal)
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
             <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
-                <h3 class="text-lg font-semibold text-gray-800 mb-4">Nuevo grupo</h3>
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                    {{ $editando_grupo ? 'Editar grupo' : 'Nuevo grupo' }}
+                </h3>
 
                 <div class="space-y-4">
                     <div>
@@ -84,7 +93,9 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Alumnos (máximo 2)</label>
+                        <label class="block text-sm font-medium text-gray-700">
+                            Alumnos (máximo 3)
+                        </label>
                         @forelse ($alumnos_disponibles as $alumno)
                             <label class="flex items-center gap-2 mt-2">
                                 <input type="checkbox"
@@ -92,9 +103,12 @@
                                     value="{{ $alumno->id }}"
                                     class="rounded border-gray-300">
                                 {{ $alumno->nombre_completo }}
+                                @if (in_array((string)$alumno->id, $alumnos_seleccionados))
+                                    <span class="text-xs text-indigo-500">(en este grupo)</span>
+                                @endif
                             </label>
                         @empty
-                            <p class="text-sm text-gray-500 mt-1">No hay alumnos disponibles sin grupo.</p>
+                            <p class="text-sm text-gray-500 mt-1">No hay alumnos disponibles.</p>
                         @endforelse
                         @error('alumnos_seleccionados') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                     </div>
@@ -105,9 +119,9 @@
                         class="px-4 py-2 text-sm text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">
                         Cancelar
                     </button>
-                    <button wire:click="crearGrupo"
+                    <button wire:click="guardarGrupo"
                         class="px-4 py-2 text-sm text-white bg-indigo-600 rounded-lg hover:bg-indigo-700">
-                        Crear grupo
+                        {{ $editando_grupo ? 'Guardar cambios' : 'Crear grupo' }}
                     </button>
                 </div>
             </div>
