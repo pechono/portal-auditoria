@@ -12,6 +12,10 @@
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                     @if(auth()->user()->rol === 'docente')
+                        @php
+                            $sol_pendientes  = \App\Models\Solicitud::where('estado', 'pendiente')->count();
+                            $ent_pendientes  = \App\Models\Entrega::where('estado', 'enviada')->count();
+                        @endphp
                         <x-nav-link :href="route('docente.dashboard')" :active="request()->routeIs('docente.dashboard')">
                             Dashboard
                         </x-nav-link>
@@ -22,10 +26,24 @@
                             Grupos
                         </x-nav-link>
                         <x-nav-link :href="route('docente.solicitudes')" :active="request()->routeIs('docente.solicitudes')">
-                            Solicitudes
+                            <span class="flex items-center gap-1.5">
+                                Solicitudes
+                                @if($sol_pendientes > 0)
+                                    <span class="px-1.5 py-0.5 text-xs bg-yellow-500 text-white rounded-full leading-none">
+                                        {{ $sol_pendientes }}
+                                    </span>
+                                @endif
+                            </span>
                         </x-nav-link>
                         <x-nav-link :href="route('docente.entregas')" :active="request()->routeIs('docente.entregas')">
-                            Entregas
+                            <span class="flex items-center gap-1.5">
+                                Entregas
+                                @if($ent_pendientes > 0)
+                                    <span class="px-1.5 py-0.5 text-xs bg-yellow-500 text-white rounded-full leading-none">
+                                        {{ $ent_pendientes }}
+                                    </span>
+                                @endif
+                            </span>
                         </x-nav-link>
                         <x-nav-link :href="route('docente.casos')" :active="request()->routeIs('docente.casos')">
                             Casos
@@ -35,23 +53,37 @@
                         </x-nav-link>
                     @else
                         @php
-                            $total_notif = \App\Models\Notificacion::where('user_id', auth()->id())
+                            $notif_solicitudes = \App\Models\Notificacion::where('user_id', auth()->id())
                                 ->where('leida', false)
+                                ->where('tipo', 'like', 'solicitud_%')
+                                ->count();
+                            $notif_entregas = \App\Models\Notificacion::where('user_id', auth()->id())
+                                ->where('leida', false)
+                                ->where('tipo', 'like', 'entrega_%')
                                 ->count();
                         @endphp
                         <x-nav-link :href="route('alumno.dashboard')" :active="request()->routeIs('alumno.dashboard')">
                             Dashboard
-                            @if($total_notif > 0)
-                                <span class="ml-1 px-1.5 py-0.5 text-xs bg-red-500 text-white rounded-full">
-                                    {{ $total_notif }}
-                                </span>
-                            @endif
                         </x-nav-link>
                         <x-nav-link :href="route('alumno.etapas')" :active="request()->routeIs('alumno.etapas')">
-                            Mis etapas
+                            <span class="flex items-center gap-1.5">
+                                Mis etapas
+                                @if($notif_entregas > 0)
+                                    <span class="px-1.5 py-0.5 text-xs bg-red-500 text-white rounded-full leading-none">
+                                        {{ $notif_entregas }}
+                                    </span>
+                                @endif
+                            </span>
                         </x-nav-link>
                         <x-nav-link :href="route('alumno.recursos')" :active="request()->routeIs('alumno.recursos')">
-                            Recursos
+                            <span class="flex items-center gap-1.5">
+                                Recursos
+                                @if($notif_solicitudes > 0)
+                                    <span class="px-1.5 py-0.5 text-xs bg-red-500 text-white rounded-full leading-none">
+                                        {{ $notif_solicitudes }}
+                                    </span>
+                                @endif
+                            </span>
                         </x-nav-link>
                     @endif
                 </div>
@@ -109,10 +141,24 @@
                     Grupos
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('docente.solicitudes')" :active="request()->routeIs('docente.solicitudes')">
-                    Solicitudes
+                    <span class="flex items-center gap-1.5">
+                        Solicitudes
+                        @if($sol_pendientes > 0)
+                            <span class="px-1.5 py-0.5 text-xs bg-yellow-500 text-white rounded-full leading-none">
+                                {{ $sol_pendientes }}
+                            </span>
+                        @endif
+                    </span>
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('docente.entregas')" :active="request()->routeIs('docente.entregas')">
-                    Entregas
+                    <span class="flex items-center gap-1.5">
+                        Entregas
+                        @if($ent_pendientes > 0)
+                            <span class="px-1.5 py-0.5 text-xs bg-yellow-500 text-white rounded-full leading-none">
+                                {{ $ent_pendientes }}
+                            </span>
+                        @endif
+                    </span>
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('docente.casos')" :active="request()->routeIs('docente.casos')">
                     Casos
@@ -123,17 +169,26 @@
             @else
                 <x-responsive-nav-link :href="route('alumno.dashboard')" :active="request()->routeIs('alumno.dashboard')">
                     Dashboard
-                    @if(isset($total_notif) && $total_notif > 0)
-                        <span class="ml-1 px-1.5 py-0.5 text-xs bg-red-500 text-white rounded-full">
-                            {{ $total_notif }}
-                        </span>
-                    @endif
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('alumno.etapas')" :active="request()->routeIs('alumno.etapas')">
-                    Mis etapas
+                    <span class="flex items-center gap-1.5">
+                        Mis etapas
+                        @if($notif_entregas > 0)
+                            <span class="px-1.5 py-0.5 text-xs bg-red-500 text-white rounded-full leading-none">
+                                {{ $notif_entregas }}
+                            </span>
+                        @endif
+                    </span>
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('alumno.recursos')" :active="request()->routeIs('alumno.recursos')">
-                    Recursos
+                    <span class="flex items-center gap-1.5">
+                        Recursos
+                        @if($notif_solicitudes > 0)
+                            <span class="px-1.5 py-0.5 text-xs bg-red-500 text-white rounded-full leading-none">
+                                {{ $notif_solicitudes }}
+                            </span>
+                        @endif
+                    </span>
                 </x-responsive-nav-link>
             @endif
         </div>

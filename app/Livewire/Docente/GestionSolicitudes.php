@@ -4,12 +4,14 @@ namespace App\Livewire\Docente;
 
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use Livewire\WithPagination;
 use App\Models\Solicitud;
 use App\Models\Documento;
+use App\Models\Grupo;
 
 class GestionSolicitudes extends Component
 {
-    use WithFileUploads;
+    use WithFileUploads, WithPagination;
 
     public bool $mostrarModal    = false;
     public int $solicitud_id     = 0;
@@ -17,7 +19,29 @@ class GestionSolicitudes extends Component
     public string $accion        = '';
     public string $recurso_id    = '';
     public string $filtro_estado = 'pendiente';
+    public string $filtro_tipo   = '';
+    public string $busqueda      = '';
+    public string $vista         = 'grupos';
     public $acta;
+
+    protected $paginationTheme = 'tailwind';
+
+    public function updatingFiltroEstado(): void { $this->resetPage(); }
+    public function updatingFiltroTipo(): void   { $this->resetPage(); }
+    public function updatingBusqueda(): void     { $this->resetPage(); }
+
+    public function cambiarVista(string $v): void
+    {
+        $this->vista = $v;
+        $this->resetPage();
+    }
+
+    public function limpiarFiltros(): void
+    {
+        $this->filtro_tipo = '';
+        $this->busqueda    = '';
+        $this->resetPage();
+    }
 
     public function abrirModal(int $solicitud_id, string $accion): void
     {
@@ -120,18 +144,11 @@ class GestionSolicitudes extends Component
 
     public function render()
     {
-        $solicitudes = Solicitud::with(['grupo.caso', 'solicitante'])
-            ->where('estado', $this->filtro_estado)
-            ->orderBy('created_at', 'desc')
-            ->get();
-
         $documentos    = Documento::where('activo', true)->get();
         $entrevistados = \App\Models\Entrevistado::where('activo', true)->get();
 
-        // Archivos del repositorio
         $repositorio_path = public_path('uploads' . DIRECTORY_SEPARATOR . 'repositorio');
         $archivos = [];
-
         if (\Illuminate\Support\Facades\File::exists($repositorio_path)) {
             $archivos = collect(\Illuminate\Support\Facades\File::files($repositorio_path))
                 ->map(fn($file) => $file->getFilename())
@@ -140,7 +157,44 @@ class GestionSolicitudes extends Component
                 ->toArray();
         }
 
+        $busqueda = trim($this->busqueda);
+
+        if ($this->vista === 'grupos') {
+            $grupos = Grupo::with(['caso', 'usuarios',
+                    'solicitudes' => fn($q) => $q->with('solicitante')
+                        ->where('estado', $this->filtro_estado)
+                        ->when($this->filtro_tipo, fn($q) => $q->where('tipo', $this->filtro_tipo))
+                        ->orderBy('created_at', 'desc'),
+                ])
+                ->whereHas('solicitudes', function ($q) {
+                    $q->where('estado', $this->filtro_estado);
+                    if ($this->filtro_tipo) {
+                        $q->where('tipo', $this->filtro_tipo);
+                    }
+                })
+                ->when($busqueda, fn($q) => $q->where('nombre', 'like', "%{$busqueda}%"))
+                ->orderBy('nombre')
+                ->paginate(5);
+
+            return view('livewire.docente.gestion-solicitudes', [
+                'grupos'        => $grupos,
+                'solicitudes'   => collect(),
+                'documentos'    => $documentos,
+                'entrevistados' => $entrevistados,
+                'archivos'      => $archivos,
+            ]);
+        }
+
+        // Vista lista con paginación
+        $solicitudes = Solicitud::with(['grupo.caso', 'solicitante'])
+            ->where('estado', $this->filtro_estado)
+            ->when($this->filtro_tipo, fn($q) => $q->where('tipo', $this->filtro_tipo))
+            ->when($busqueda, fn($q) => $q->whereHas('grupo', fn($q) => $q->where('nombre', 'like', "%{$busqueda}%")))
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
         return view('livewire.docente.gestion-solicitudes', [
+            'grupos'        => collect(),
             'solicitudes'   => $solicitudes,
             'documentos'    => $documentos,
             'entrevistados' => $entrevistados,

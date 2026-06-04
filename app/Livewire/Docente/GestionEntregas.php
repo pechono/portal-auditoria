@@ -41,7 +41,15 @@ class GestionEntregas extends Component
     public function abrirModal(int $entrega_id): void
     {
         $this->reset(['comentario', 'devolucion', 'nota', 'estado']);
-        $this->entrega_id   = $entrega_id;
+        $this->entrega_id = $entrega_id;
+
+        $entrega = Entrega::find($entrega_id);
+        if ($entrega && $entrega->estado !== 'enviada') {
+            $this->estado     = $entrega->estado;
+            $this->comentario = $entrega->comentario_docente ?? '';
+            $this->nota       = $entrega->nota;
+        }
+
         $this->mostrarModal = true;
     }
 

@@ -126,6 +126,12 @@ class EntregaEtapa extends Component
                 ->exists();
         }
 
+        // Marcar notificaciones de entrega como leídas al entrar
+        \App\Models\Notificacion::where('user_id', auth()->id())
+            ->where('tipo', 'like', 'entrega_%')
+            ->where('leida', false)
+            ->update(['leida' => true]);
+
         return view('livewire.alumno.entrega-etapa', [
             'grupo'            => $grupo,
             'etapas'           => $etapas,
