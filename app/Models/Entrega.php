@@ -15,6 +15,7 @@ class Entrega extends Model
         'estado',
         'comentario_docente',
         'devolucion_path',
+        'nota',
         'revisado_por',
         'revisado_at',
     ];

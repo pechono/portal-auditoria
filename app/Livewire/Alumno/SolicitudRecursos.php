@@ -138,6 +138,12 @@ class SolicitudRecursos extends Component
                 ->exists();
         }
 
+        // Marcar notificaciones de solicitud como leídas al entrar
+        \App\Models\Notificacion::where('user_id', auth()->id())
+            ->where('tipo', 'like', 'solicitud_%')
+            ->where('leida', false)
+            ->update(['leida' => true]);
+
         $docs_libres = Documento::where('caso_id', $grupo->caso_id)
             ->where('acceso_libre', true)
             ->where('activo', true)

@@ -15,6 +15,7 @@ class GestionAlumnos extends Component
     public string $email         = '';
     public ?int $editando_alumno = null;
     public string $buscar        = '';
+    public bool $solo_sin_grupo  = false;
 
     protected function rules(): array
     {
@@ -97,6 +98,7 @@ class GestionAlumnos extends Component
     public function render()
     {
         $alumnos = User::where('rol', 'alumno')
+            ->with('grupos')
             ->when($this->buscar, function ($query) {
                 $query->where(function ($q) {
                     $q->where('nombre', 'like', '%' . $this->buscar . '%')
@@ -104,11 +106,15 @@ class GestionAlumnos extends Component
                       ->orWhere('email', 'like', '%' . $this->buscar . '%');
                 });
             })
+            ->when($this->solo_sin_grupo, fn($q) => $q->doesntHave('grupos'))
             ->orderBy('apellido')
             ->get();
 
+        $sin_grupo = User::where('rol', 'alumno')->doesntHave('grupos')->count();
+
         return view('livewire.docente.gestion-alumnos', [
-            'alumnos' => $alumnos,
+            'alumnos'   => $alumnos,
+            'sin_grupo' => $sin_grupo,
         ]);
     }
 }
