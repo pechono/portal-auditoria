@@ -425,17 +425,34 @@
 
                     @elseif ($accion === 'aprobar' && $sol)
                         @if ($sol->tipo === 'documento')
+                            @php
+                                $ya_entregados = $docs_entregados_por_grupo->get($sol->grupo_id, collect());
+                                $docs_disponibles = $documentos
+                                    ->where('caso_id', $sol->grupo->caso_id)
+                                    ->reject(fn($doc) => $ya_entregados->contains($doc->id));
+                            @endphp
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">
                                     Documento a entregar
                                 </label>
-                                <select wire:model="recurso_id"
-                                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500">
-                                    <option value="">Seleccionar documento...</option>
-                                    @foreach ($documentos->where('caso_id', $sol->grupo->caso_id) as $doc)
-                                        <option value="{{ $doc->id }}">{{ $doc->codigo }} — {{ $doc->titulo }}</option>
-                                    @endforeach
-                                </select>
+                                @if($docs_disponibles->isEmpty())
+                                    <div class="p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-700">
+                                        Este grupo ya recibió todos los documentos disponibles del caso.
+                                    </div>
+                                @else
+                                    <select wire:model="recurso_id"
+                                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500">
+                                        <option value="">Seleccionar documento...</option>
+                                        @foreach ($docs_disponibles as $doc)
+                                            <option value="{{ $doc->id }}">{{ $doc->codigo }} — {{ $doc->titulo }}</option>
+                                        @endforeach
+                                    </select>
+                                @endif
+                                @if($ya_entregados->count() > 0)
+                                    <p class="text-xs text-gray-400 mt-1">
+                                        {{ $ya_entregados->count() }} {{ $ya_entregados->count() === 1 ? 'documento ya entregado' : 'documentos ya entregados' }} a este grupo (no se muestran).
+                                    </p>
+                                @endif
                                 @error('recurso_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
                         @elseif ($sol->tipo === 'entrevista')
