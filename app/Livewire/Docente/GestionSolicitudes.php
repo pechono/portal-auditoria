@@ -144,6 +144,14 @@ class GestionSolicitudes extends Component
 
     public function render()
     {
+        // grupo_id => colección de recurso_ids ya entregados
+        $docs_entregados_por_grupo = Solicitud::where('estado', 'aprobada')
+            ->where('tipo', 'documento')
+            ->whereNotNull('recurso_id')
+            ->get()
+            ->groupBy('grupo_id')
+            ->map(fn($sols) => $sols->pluck('recurso_id'));
+
         $documentos    = Documento::where('activo', true)->get();
         $entrevistados = \App\Models\Entrevistado::where('activo', true)->get();
 
@@ -177,11 +185,12 @@ class GestionSolicitudes extends Component
                 ->paginate(5);
 
             return view('livewire.docente.gestion-solicitudes', [
-                'grupos'        => $grupos,
-                'solicitudes'   => collect(),
-                'documentos'    => $documentos,
-                'entrevistados' => $entrevistados,
-                'archivos'      => $archivos,
+                'grupos'                    => $grupos,
+                'solicitudes'               => collect(),
+                'documentos'                => $documentos,
+                'entrevistados'             => $entrevistados,
+                'archivos'                  => $archivos,
+                'docs_entregados_por_grupo' => $docs_entregados_por_grupo,
             ]);
         }
 
@@ -194,11 +203,12 @@ class GestionSolicitudes extends Component
             ->paginate(10);
 
         return view('livewire.docente.gestion-solicitudes', [
-            'grupos'        => collect(),
-            'solicitudes'   => $solicitudes,
-            'documentos'    => $documentos,
-            'entrevistados' => $entrevistados,
-            'archivos'      => $archivos,
+            'grupos'                    => collect(),
+            'solicitudes'               => $solicitudes,
+            'documentos'                => $documentos,
+            'entrevistados'             => $entrevistados,
+            'archivos'                  => $archivos,
+            'docs_entregados_por_grupo' => $docs_entregados_por_grupo,
         ]);
     }
 }
