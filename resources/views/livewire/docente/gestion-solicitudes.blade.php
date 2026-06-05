@@ -194,7 +194,10 @@
                                                             <span class="px-2 py-1 text-xs bg-yellow-100 text-yellow-700 rounded">Sin acta</span>
                                                         @endif
                                                     @elseif ($solicitud->estado === 'aprobada' && $solicitud->tipo === 'documento')
-                                                        <span class="px-2 py-1 text-xs bg-green-100 text-green-700 rounded">Documento entregado</span>
+                                                        @php $doc = \App\Models\Documento::find($solicitud->recurso_id) @endphp
+                                                        <span class="px-2 py-1 text-xs bg-green-100 text-green-700 rounded" title="{{ $doc?->titulo }}">
+                                                            ✓ {{ $doc ? $doc->codigo . ' — ' . \Str::limit($doc->titulo, 30) : 'Documento entregado' }}
+                                                        </span>
                                                     @elseif ($solicitud->estado === 'rechazada')
                                                         <span class="px-2 py-1 text-xs bg-red-100 text-red-700 rounded">Rechazada</span>
                                                     @endif
@@ -283,7 +286,10 @@
                                                 <span class="px-2 py-1 text-xs bg-yellow-100 text-yellow-700 rounded">Sin acta</span>
                                             @endif
                                         @elseif ($solicitud->estado === 'aprobada' && $solicitud->tipo === 'documento')
-                                            <span class="px-2 py-1 text-xs bg-green-100 text-green-700 rounded">Documento entregado</span>
+                                            @php $doc = \App\Models\Documento::find($solicitud->recurso_id) @endphp
+                                            <span class="px-2 py-1 text-xs bg-green-100 text-green-700 rounded" title="{{ $doc?->titulo }}">
+                                                ✓ {{ $doc ? $doc->codigo . ' — ' . \Str::limit($doc->titulo, 30) : 'Documento entregado' }}
+                                            </span>
                                         @elseif ($solicitud->estado === 'rechazada')
                                             <span class="px-2 py-1 text-xs bg-red-100 text-red-700 rounded">Rechazada</span>
                                         @endif
