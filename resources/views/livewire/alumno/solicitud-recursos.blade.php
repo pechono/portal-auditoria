@@ -183,23 +183,31 @@
                                     @endif --}}
 
                                     @if ($sol_ent->estado === 'aprobada')
-                                    @php
-                                        $entrevistado_acta = $sol_ent->recurso_id
-                                            ? \App\Models\Entrevistado::find($sol_ent->recurso_id)
-                                            : null;
-                                        $acta = $sol_ent->acta_path ?? $entrevistado_acta?->acta_path;
-                                    @endphp
-                                    @if ($acta)
-                                        <a href="{{ asset('uploads/' . $acta) }}" target="_blank"
-                                            class="px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700">
-                                             Descargar
-                                        </a>
-                                    @else
-                                        <span class="px-3 py-1 text-xs bg-yellow-100 text-yellow-700 rounded">
-                                             Pendiente
-                                            
-                                        </span>
-                                    @endif
+                                        @php
+                                            $entrevistado_acta = $sol_ent->recurso_id
+                                                ? \App\Models\Entrevistado::find($sol_ent->recurso_id)
+                                                : null;
+                                            $acta = $sol_ent->acta_path ?? $entrevistado_acta?->acta_path;
+                                        @endphp
+                                        @if ($acta)
+                                            <a href="{{ asset('uploads/' . $acta) }}" target="_blank"
+                                                class="px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700">
+                                                Descargar acta
+                                            </a>
+                                        @else
+                                            <div class="flex flex-col gap-1">
+                                                <span class="px-2 py-1 text-xs bg-green-100 text-green-700 rounded">
+                                                    ✓ Entrevista aprobada
+                                                </span>
+                                                <span class="text-xs text-gray-400">
+                                                    Acta pendiente de carga
+                                                </span>
+                                            </div>
+                                        @endif
+                                    @elseif ($sol_ent->estado === 'rechazada')
+                                        <span class="px-2 py-1 text-xs bg-red-100 text-red-700 rounded">Rechazada</span>
+                                    @elseif ($sol_ent->estado === 'pendiente')
+                                        <span class="px-2 py-1 text-xs bg-yellow-100 text-yellow-700 rounded">Sin respuesta</span>
                                     @endif
 
                                 </td>
