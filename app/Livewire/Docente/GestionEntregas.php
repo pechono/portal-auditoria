@@ -115,7 +115,6 @@ class GestionEntregas extends Component
                 'caso',
                 'entregas.etapa',
             ])
-            ->whereHas('entregas')
             ->orderBy('nombre')
             ->get()
             ->map(function ($grupo) use ($etapas_por_caso) {
