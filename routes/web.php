@@ -45,6 +45,9 @@ Route::middleware(['auth', 'es.docente'])
         return view('docente.alumnos');
     })->name('alumnos');
 
+    Route::get('/finales', function () {
+        return view('docente.finales');
+    })->name('finales');
 
 });
 
