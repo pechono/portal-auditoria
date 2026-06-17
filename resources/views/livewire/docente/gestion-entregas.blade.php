@@ -89,8 +89,8 @@
                             style="width: {{ $pct }}%"></div>
                     </div>
                     <div class="flex justify-between text-xs text-gray-400 mt-1">
-                        <span>{{ $grupo->_aprobadas }} de {{ $grupo->_total }} etapas aprobadas</span>
-                        <span>{{ $grupo->_total - $grupo->_aprobadas }} restantes</span>
+                        <span>Etapa {{ $grupo->_max_etapa }} de {{ $grupo->_total_etapas }}</span>
+                        <span>{{ $grupo->_aprobadas }} aprobada{{ $grupo->_aprobadas !== 1 ? 's' : '' }}</span>
                     </div>
                 </div>
 

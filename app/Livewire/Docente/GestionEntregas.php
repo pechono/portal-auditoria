@@ -107,6 +107,9 @@ class GestionEntregas extends Component
             ->orderBy('created_at', 'desc')
             ->get();
 
+        // Total de etapas por caso para calcular progreso
+        $etapas_por_caso = \App\Models\Etapa::all()->groupBy('caso_id');
+
         // Vista por grupo: todos los grupos con progreso completo
         $grupos = Grupo::with([
                 'caso',
@@ -115,20 +118,27 @@ class GestionEntregas extends Component
             ->whereHas('entregas')
             ->orderBy('nombre')
             ->get()
-            ->map(function ($grupo) {
-                $total    = $grupo->entregas->count();
-                $aprobadas = $grupo->entregas->where('estado', 'aprobadas')->count();
-                $aprobadas = $grupo->entregas->where('estado', 'aprobada')->count();
+            ->map(function ($grupo) use ($etapas_por_caso) {
+                $total_etapas = $etapas_por_caso->get($grupo->caso_id, collect())->count();
+
+                // Etapa más avanzada entregada (por número de etapa)
+                $max_etapa = $grupo->entregas->max(fn($e) => $e->etapa->numero ?? 0);
+
+                // Etapa 1 es informativa y siempre cuenta como completada
+                $pct = $total_etapas > 0 ? round($max_etapa / $total_etapas * 100) : 0;
+
                 $pendientes = $grupo->entregas->where('estado', 'enviada')->count();
-                $con_obs  = $grupo->entregas->where('estado', 'con_observaciones')->count();
+                $con_obs    = $grupo->entregas->where('estado', 'con_observaciones')->count();
                 $rechazadas = $grupo->entregas->where('estado', 'rechazada')->count();
-                $pct      = $total > 0 ? round($aprobadas / $total * 100) : 0;
-                $grupo->_total      = $total;
-                $grupo->_aprobadas  = $aprobadas;
-                $grupo->_pendientes = $pendientes;
-                $grupo->_con_obs    = $con_obs;
-                $grupo->_rechazadas = $rechazadas;
-                $grupo->_pct        = $pct;
+                $aprobadas  = $grupo->entregas->where('estado', 'aprobada')->count();
+
+                $grupo->_total_etapas = $total_etapas;
+                $grupo->_max_etapa    = $max_etapa;
+                $grupo->_aprobadas    = $aprobadas;
+                $grupo->_pendientes   = $pendientes;
+                $grupo->_con_obs      = $con_obs;
+                $grupo->_rechazadas   = $rechazadas;
+                $grupo->_pct          = $pct;
                 return $grupo;
             });
 
