@@ -16,6 +16,7 @@ class GestionEntregas extends Component
     public string $estado        = '';
     public string $comentario    = '';
     public string $filtro_estado = 'enviada';
+    public string $vista         = 'grupos';
     public $devolucion;
     public ?float $nota          = null;
 
@@ -106,8 +107,34 @@ class GestionEntregas extends Component
             ->orderBy('created_at', 'desc')
             ->get();
 
+        // Vista por grupo: todos los grupos con progreso completo
+        $grupos = Grupo::with([
+                'caso',
+                'entregas.etapa',
+            ])
+            ->whereHas('entregas')
+            ->orderBy('nombre')
+            ->get()
+            ->map(function ($grupo) {
+                $total    = $grupo->entregas->count();
+                $aprobadas = $grupo->entregas->where('estado', 'aprobadas')->count();
+                $aprobadas = $grupo->entregas->where('estado', 'aprobada')->count();
+                $pendientes = $grupo->entregas->where('estado', 'enviada')->count();
+                $con_obs  = $grupo->entregas->where('estado', 'con_observaciones')->count();
+                $rechazadas = $grupo->entregas->where('estado', 'rechazada')->count();
+                $pct      = $total > 0 ? round($aprobadas / $total * 100) : 0;
+                $grupo->_total      = $total;
+                $grupo->_aprobadas  = $aprobadas;
+                $grupo->_pendientes = $pendientes;
+                $grupo->_con_obs    = $con_obs;
+                $grupo->_rechazadas = $rechazadas;
+                $grupo->_pct        = $pct;
+                return $grupo;
+            });
+
         return view('livewire.docente.gestion-entregas', [
             'entregas' => $entregas,
+            'grupos'   => $grupos,
         ]);
     }
 }
