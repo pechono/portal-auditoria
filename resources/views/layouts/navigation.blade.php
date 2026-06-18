@@ -54,6 +54,9 @@
                         <x-nav-link :href="route('docente.finales')" :active="request()->routeIs('docente.finales')">
                             Finales
                         </x-nav-link>
+                        <x-nav-link :href="route('docente.informe')" :active="request()->routeIs('docente.informe')">
+                            Informe
+                        </x-nav-link>
                     @else
                         @php
                             $notif_solicitudes = \App\Models\Notificacion::where('user_id', auth()->id())
@@ -171,6 +174,9 @@
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('docente.finales')" :active="request()->routeIs('docente.finales')">
                     Finales
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('docente.informe')" :active="request()->routeIs('docente.informe')">
+                    Informe
                 </x-responsive-nav-link>
             @else
                 <x-responsive-nav-link :href="route('alumno.dashboard')" :active="request()->routeIs('alumno.dashboard')">
