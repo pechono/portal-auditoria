@@ -4,6 +4,37 @@
             <p class="text-yellow-700 font-medium">Todavía no estás asignado a ningún grupo.</p>
             <p class="text-yellow-600 text-sm mt-1">Esperá que el docente te asigne un grupo y un caso.</p>
         </div>
+    @elseif($grupo->estado === 'finalizado')
+        <div class="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-xl p-10 text-center">
+            <div class="text-5xl mb-4">🎓</div>
+            <h2 class="text-2xl font-bold text-green-700 mb-2">¡Felicitaciones!</h2>
+            <p class="text-green-600 text-lg font-medium mb-1">{{ $grupo->nombre }}</p>
+            <p class="text-green-500 text-sm mb-4">{{ $grupo->caso->nombre }}</p>
+            <p class="text-gray-600 text-sm max-w-md mx-auto">
+                Completaron exitosamente el ciclo de auditoría. El docente ha cerrado el grupo. ¡Muy buen trabajo!
+            </p>
+            @php $alumno_pivot = $grupo->usuarios->firstWhere('id', auth()->id())?->pivot; @endphp
+            @if($alumno_pivot && $alumno_pivot->condicion)
+                <div class="mt-6 inline-block px-6 py-3 rounded-full text-sm font-semibold
+                    {{ $alumno_pivot->condicion === 'promocionado' ? 'bg-green-600 text-white' : ($alumno_pivot->condicion === 'regular' ? 'bg-yellow-500 text-white' : 'bg-red-500 text-white') }}">
+                    Condición: {{ ucfirst($alumno_pivot->condicion) }}
+                </div>
+            @endif
+            @if($grupo->devolucion_final_path)
+                <div class="mt-6">
+                    <a href="{{ asset('uploads/' . $grupo->devolucion_final_path) }}" target="_blank"
+                        class="inline-flex items-center gap-2 px-6 py-3 bg-white text-green-700 border-2 border-green-500 rounded-lg font-semibold text-sm hover:bg-green-50 transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+                        </svg>
+                        Descargar devolución final
+                    </a>
+                    <p class="text-xs text-gray-500 mt-2">El docente subió la corrección del trabajo grupal.</p>
+                </div>
+            @endif
+        </div>
+
     @else
         {{-- Info del caso --}}
         <div class="bg-indigo-50 rounded-lg p-6 mb-6">

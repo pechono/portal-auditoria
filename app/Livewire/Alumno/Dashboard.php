@@ -11,7 +11,7 @@ class Dashboard extends Component
 {
     public function render()
     {
-        $grupo = auth()->user()->grupos()->with('caso')->first();
+        $grupo = auth()->user()->grupos()->with(['caso', 'usuarios'])->first();
 
         if (!$grupo) {
             return view('livewire.alumno.dashboard', [
