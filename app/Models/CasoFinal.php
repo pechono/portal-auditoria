@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class CasoFinal extends Model
 {
+    protected $table = 'casos_finales';
+
     protected $fillable = [
         'nombre', 'empresa', 'antecedentes',
         'dificultad', 'integrantes_min', 'integrantes_max',
