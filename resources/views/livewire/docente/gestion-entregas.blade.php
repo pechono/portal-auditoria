@@ -59,6 +59,9 @@
                         <div>
                             <h3 class="text-base font-semibold text-indigo-800">{{ $grupo->nombre }}</h3>
                             <p class="text-xs text-indigo-400 mt-0.5">{{ $grupo->caso->nombre }}</p>
+                            <p class="text-xs text-gray-400 mt-1">
+                                {{ $grupo->usuarios->map(fn($u) => $u->nombre_completo)->join(', ') }}
+                            </p>
                         </div>
                         <div class="flex items-center gap-4 text-xs">
                             @if($grupo->_pendientes > 0)

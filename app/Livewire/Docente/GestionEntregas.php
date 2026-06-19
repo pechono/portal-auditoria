@@ -118,6 +118,7 @@ class GestionEntregas extends Component
         // Vista por grupo: todos los grupos con progreso completo
         $grupos = Grupo::with([
                 'caso',
+                'usuarios',
                 'entregas.etapa',
             ])
             ->orderBy('nombre')
