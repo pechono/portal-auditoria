@@ -59,6 +59,11 @@ class GestionEntregas extends Component
         $this->mostrarModal = false;
     }
 
+    public function finalizarGrupo(int $grupo_id): void
+    {
+        Grupo::find($grupo_id)?->update(['estado' => 'finalizado']);
+    }
+
     public function procesarEntrega(): void
     {
         $this->validate();

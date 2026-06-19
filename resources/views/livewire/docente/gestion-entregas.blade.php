@@ -80,6 +80,16 @@
                                 </span>
                             @endif
                             <span class="font-semibold {{ $textColor }} text-sm">{{ $pct }}%</span>
+                            @if($grupo->estado !== 'finalizado')
+                                <button
+                                    wire:click="finalizarGrupo({{ $grupo->id }})"
+                                    wire:confirm="¿Finalizar el grupo {{ $grupo->nombre }}?"
+                                    class="px-3 py-1.5 text-xs bg-gray-700 text-white rounded-lg hover:bg-gray-800">
+                                    Finalizar
+                                </button>
+                            @else
+                                <span class="px-2 py-0.5 text-xs bg-gray-200 text-gray-500 rounded-full">Finalizado</span>
+                            @endif
                         </div>
                     </div>
 
