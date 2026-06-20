@@ -14,6 +14,7 @@ class CasoSeeder extends Seeder
     {
         $this->casoFMC();
         $this->casoCSIV();
+        $this->casoCSIL();
     }
 
     // ─────────────────────────────────────────
@@ -92,6 +93,55 @@ class CasoSeeder extends Seeder
             ['nombre' => 'Claudia Ríos',      'cargo' => 'Jefa de Facturación',      'area' => 'Facturación',  'descripcion_rol' => 'Gestiona la facturación a obras sociales y pacientes particulares.'],
             ['nombre' => 'Jorge Villalba',    'cargo' => 'Contador',                 'area' => 'Finanzas',     'descripcion_rol' => 'Responsable del control financiero y liquidaciones.'],
             ['nombre' => 'Patricia Molina',   'cargo' => 'Médica de Planta',         'area' => 'Médica',       'descripcion_rol' => 'Representa al cuerpo médico afectado por las liquidaciones incorrectas.'],
+        ];
+
+        foreach ($entrevistados as $e) {
+            Entrevistado::create(array_merge($e, ['caso_id' => $caso->id]));
+        }
+
+        // Etapas
+        $this->crearEtapas($caso->id);
+    }
+
+    // ─────────────────────────────────────────
+    // CASO 3 — Centro de Salud Integral de los Llanos S.R.L.
+    // ─────────────────────────────────────────
+    private function casoCSIL(): void
+    {
+        $caso = Caso::create([
+            'codigo'      => 'CSIL',
+            'nombre'      => 'Centro de Salud Integral de los Llanos S.R.L.',
+            'descripcion' => 'Centro de salud privado de La Rioja. Sistema de liquidación de honorarios médicos SaludGest.',
+            'activo'      => true,
+        ]);
+
+        // Documentos
+        $documentos = [
+            ['codigo' => 'DOC-01', 'titulo' => 'Trabajo Practico - Consigna Caso 2',                  'descripcion' => 'Consigna del trabajo práctico para el caso CSIL.'],
+            ['codigo' => 'DOC-02', 'titulo' => 'Resena Institucional - CSIL S.R.L.',                  'descripcion' => 'Historia y estructura de la organización.'],
+            ['codigo' => 'DOC-03', 'titulo' => 'Manual de Politicas y Procedimientos Vigentes',       'descripcion' => 'Normativa interna vigente.'],
+            ['codigo' => 'DOC-04', 'titulo' => 'Reporte de Facturacion Trimestral',                   'descripcion' => 'Facturación del trimestre auditado.'],
+            ['codigo' => 'DOC-05', 'titulo' => 'Reporte de Liquidaciones del Sistema SaludGest',      'descripcion' => 'Detalle de liquidaciones generadas por el sistema.'],
+            ['codigo' => 'DOC-06', 'titulo' => 'Manual Tecnico - Modulo de Liquidacion SaludGest',   'descripcion' => 'Documentación técnica del módulo de liquidación.'],
+            ['codigo' => 'DOC-07', 'titulo' => 'Informe de Auditoria Operativa 2021',                 'descripcion' => 'Auditoría anterior con recomendaciones pendientes.'],
+        ];
+
+        foreach ($documentos as $doc) {
+            Documento::create(array_merge($doc, ['caso_id' => $caso->id]));
+        }
+
+        // Entrevistados
+        $entrevistados = [
+            ['nombre' => 'Dra. Carmen Valdes',    'cargo' => 'Directora Medica y Socia Gerente',      'area' => 'Dirección',     'descripcion_rol' => 'Máxima autoridad, quien solicita la auditoría.'],
+            ['nombre' => 'Sr. Pablo Rios',         'cargo' => 'Administrador General',                 'area' => 'Administración','descripcion_rol' => 'Gestiona los recursos administrativos y humanos.'],
+            ['nombre' => 'Sra. Lucia Ferrer',      'cargo' => 'Contadora',                             'area' => 'Finanzas',      'descripcion_rol' => 'Responsable del control financiero y liquidaciones.'],
+            ['nombre' => 'Sr. Martin Ochoa',       'cargo' => 'Jefe de Sistemas e Informatica',        'area' => 'Sistemas',      'descripcion_rol' => 'Administrador del sistema SaludGest.'],
+            ['nombre' => 'Dr. Esteban Ruiz',       'cargo' => 'Medico Clinico',                        'area' => 'Médica',        'descripcion_rol' => 'Representa al cuerpo médico afectado por liquidaciones.'],
+            ['nombre' => 'Dra. Ana Pereyra',       'cargo' => 'Medica Pediatra',                       'area' => 'Médica',        'descripcion_rol' => 'Médica de planta con observaciones sobre honorarios.'],
+            ['nombre' => 'Sra. Rosa Mamani',       'cargo' => 'Recepcionista',                         'area' => 'Recepción',     'descripcion_rol' => 'Primer contacto con pacientes, maneja turnos.'],
+            ['nombre' => 'Sr. Jorge Ibanez',       'cargo' => 'Tecnico de Laboratorio',                'area' => 'Laboratorio',   'descripcion_rol' => 'Responsable del laboratorio clínico.'],
+            ['nombre' => 'Sra. Patricia Suarez',   'cargo' => 'Facturadora de Obras Sociales',         'area' => 'Facturación',   'descripcion_rol' => 'Gestiona la facturación a obras sociales.'],
+            ['nombre' => 'Sr. Nicolas Leiva',      'cargo' => 'Tecnico de Soporte IT',                 'area' => 'Sistemas',      'descripcion_rol' => 'Soporte técnico del sistema SaludGest.'],
         ];
 
         foreach ($entrevistados as $e) {
