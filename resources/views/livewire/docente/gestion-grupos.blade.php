@@ -31,7 +31,15 @@
                             {{ $grupo->nombre }}
                         </td>
                         <td class="px-6 py-4 text-sm text-gray-500">
-                            {{ $grupo->caso->nombre }}
+                            <span class="block">{{ $grupo->caso->nombre }}</span>
+                            <span class="text-yellow-400 text-xs">
+                                @for ($i = 1; $i <= 5; $i++)
+                                    {{ $i <= ($grupo->caso->dificultad ?? 1) ? '★' : '☆' }}
+                                @endfor
+                            </span>
+                            <span class="text-xs {{ $grupo->caso->tipo === 'individual' ? 'text-blue-600' : 'text-purple-600' }}">
+                                {{ $grupo->caso->tipo === 'individual' ? 'Individual' : 'Grupal' }}
+                            </span>
                         </td>
                         <td class="px-6 py-4 text-sm text-gray-500">
                             @foreach ($grupo->usuarios as $usuario)
@@ -82,7 +90,7 @@
 
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Caso asignado</label>
-                        <select wire:model="caso_id"
+                        <select wire:model.live="caso_id"
                             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500">
                             <option value="">Seleccionar caso...</option>
                             @foreach ($casos as $caso)
@@ -90,6 +98,23 @@
                             @endforeach
                         </select>
                         @error('caso_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+
+                        @if ($caso_id)
+                            @php $casoSel = $casos->firstWhere('id', $caso_id); @endphp
+                            @if ($casoSel)
+                                <div class="mt-2 px-3 py-2 bg-gray-50 rounded-lg border border-gray-200 flex items-center gap-3">
+                                    <span class="text-yellow-400 text-base leading-none">
+                                        @for ($i = 1; $i <= 5; $i++)
+                                            {{ $i <= ($casoSel->dificultad ?? 1) ? '★' : '☆' }}
+                                        @endfor
+                                    </span>
+                                    <span class="text-xs {{ $casoSel->tipo === 'individual' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700' }} px-2 py-0.5 rounded-full">
+                                        {{ $casoSel->tipo === 'individual' ? 'Individual' : 'Grupal' }}
+                                    </span>
+                                    <span class="text-xs text-gray-500">Dificultad {{ $casoSel->dificultad ?? 1 }}/5</span>
+                                </div>
+                            @endif
+                        @endif
                     </div>
 
                     <div>

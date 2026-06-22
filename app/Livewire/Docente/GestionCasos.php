@@ -20,6 +20,8 @@ class GestionCasos extends Component
     public string $nombre         = '';
     public string $descripcion    = '';
     public bool $activo           = true;
+    public int $dificultad        = 1;
+    public string $tipo           = 'grupal';
     public ?int $editando_caso    = null;
 
     // Form documento
@@ -43,8 +45,10 @@ class GestionCasos extends Component
     // ── Casos ──────────────────────────────────────
     public function abrirModalCaso(?int $id = null): void
     {
-        $this->reset(['codigo', 'nombre', 'descripcion', 'activo', 'editando_caso']);
-        $this->activo = true;
+        $this->reset(['codigo', 'nombre', 'descripcion', 'activo', 'dificultad', 'tipo', 'editando_caso']);
+        $this->activo     = true;
+        $this->dificultad = 1;
+        $this->tipo       = 'grupal';
 
         if ($id) {
             $caso                = Caso::find($id);
@@ -52,6 +56,8 @@ class GestionCasos extends Component
             $this->nombre        = $caso->nombre;
             $this->descripcion   = $caso->descripcion ?? '';
             $this->activo        = $caso->activo;
+            $this->dificultad    = $caso->dificultad ?? 1;
+            $this->tipo          = $caso->tipo ?? 'grupal';
             $this->editando_caso = $id;
         }
 
@@ -69,6 +75,8 @@ class GestionCasos extends Component
             'codigo'      => ['required', 'string', 'max:20'],
             'nombre'      => ['required', 'string', 'max:255'],
             'descripcion' => ['nullable', 'string'],
+            'dificultad'  => ['required', 'integer', 'min:1', 'max:5'],
+            'tipo'        => ['required', 'in:grupal,individual'],
         ]);
 
         if ($this->editando_caso) {
@@ -77,6 +85,8 @@ class GestionCasos extends Component
                 'nombre'      => $this->nombre,
                 'descripcion' => $this->descripcion,
                 'activo'      => $this->activo,
+                'dificultad'  => $this->dificultad,
+                'tipo'        => $this->tipo,
             ]);
             session()->flash('mensaje', 'Caso actualizado correctamente.');
         } else {
@@ -85,6 +95,8 @@ class GestionCasos extends Component
                 'nombre'      => $this->nombre,
                 'descripcion' => $this->descripcion,
                 'activo'      => $this->activo,
+                'dificultad'  => $this->dificultad,
+                'tipo'        => $this->tipo,
             ]);
 
             $etapas = [

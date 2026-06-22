@@ -21,9 +21,19 @@
                     @forelse ($casos as $caso)
                         <div class="px-6 py-4 {{ $caso_seleccionado?->id === $caso->id ? 'bg-indigo-50' : '' }}">
                             <div class="flex justify-between items-start">
-                                <div>
+                                <div class="flex-1 min-w-0">
                                     <p class="text-sm font-medium text-gray-900">{{ $caso->nombre }}</p>
-                                    <p class="text-xs text-gray-400 mt-1">{{ $caso->codigo }}</p>
+                                    <p class="text-xs text-gray-400 mt-0.5">{{ $caso->codigo }}</p>
+                                    <div class="flex items-center gap-2 mt-1">
+                                        <span class="text-yellow-400 text-sm leading-none">
+                                            @for ($i = 1; $i <= 5; $i++)
+                                                {{ $i <= ($caso->dificultad ?? 1) ? '★' : '☆' }}
+                                            @endfor
+                                        </span>
+                                        <span class="text-xs {{ $caso->tipo === 'individual' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700' }} px-1.5 py-0.5 rounded-full">
+                                            {{ $caso->tipo === 'individual' ? 'Individual' : 'Grupal' }}
+                                        </span>
+                                    </div>
                                 </div>
                                 <span class="px-2 py-1 text-xs rounded-full {{ $caso->activo ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500' }}">
                                     {{ $caso->activo ? 'Activo' : 'Inactivo' }}
@@ -203,6 +213,33 @@
                             class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500"
                             placeholder="Ej: Empresa mayorista ferretera. Sistema de gestión de inventario FMCGEST."></textarea>
                         @error('descripcion') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Dificultad</label>
+                            <div class="flex items-center gap-1 mt-1">
+                                @for ($i = 1; $i <= 5; $i++)
+                                    <button type="button"
+                                        wire:click="$set('dificultad', {{ $i }})"
+                                        class="text-2xl leading-none focus:outline-none transition-colors
+                                            {{ $i <= $dificultad ? 'text-yellow-400' : 'text-gray-300' }} hover:text-yellow-400">
+                                        ★
+                                    </button>
+                                @endfor
+                                <span class="ml-2 text-xs text-gray-500">{{ $dificultad }}/5</span>
+                            </div>
+                            @error('dificultad') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
+                            <select wire:model="tipo"
+                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500">
+                                <option value="grupal">Grupal</option>
+                                <option value="individual">Individual</option>
+                            </select>
+                            @error('tipo') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                        </div>
                     </div>
                 </div>
 

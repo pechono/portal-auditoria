@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Caso extends Model
 {
-    protected $fillable = ['codigo', 'nombre', 'descripcion', 'activo'];
+    protected $fillable = ['codigo', 'nombre', 'descripcion', 'activo', 'dificultad', 'tipo'];
 
     public function grupos()
     {
