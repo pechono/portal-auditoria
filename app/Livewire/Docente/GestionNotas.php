@@ -24,9 +24,12 @@ class GestionNotas extends Component
     public string $trabajo_nombre    = '';
     public ?int $editando_trabajo    = null;
 
-    // Notas (grilla: [trabajo_evaluable_id][user_id] => nota)
+    // Notas editables en la grilla (sincronizadas con Livewire)
     public array $notas        = [];
     public array $observaciones = [];
+
+    // Notas guardadas en DB (solo lectura, no se sincronizan con frontend)
+    protected array $notasDB = [];
 
     public function mount(): void
     {
@@ -179,14 +182,12 @@ class GestionNotas extends Component
         $ciclo    = $this->ciclo_id ? CicloLectivo::with('trabajos')->find($this->ciclo_id) : null;
         $trabajos = $ciclo?->trabajos ?? collect();
 
-        // Cargar notas desde DB en cada render
+        // Cargar notas desde DB para mostrar en la grilla
+        $notasDB = [];
         if ($this->ciclo_id) {
-            $this->notas         = [];
-            $this->observaciones = [];
             $registros = NotaAlumno::where('ciclo_lectivo_id', $this->ciclo_id)->get();
             foreach ($registros as $r) {
-                $this->notas[$r->trabajo_evaluable_id][$r->user_id]         = $r->nota !== null ? (string) $r->nota : '';
-                $this->observaciones[$r->trabajo_evaluable_id][$r->user_id] = $r->observaciones ?? '';
+                $notasDB[$r->trabajo_evaluable_id][$r->user_id] = $r->nota !== null ? (string) $r->nota : '';
             }
         }
 
@@ -211,6 +212,7 @@ class GestionNotas extends Component
             'trabajos'  => $trabajos,
             'grupos'    => $grupos,
             'sin_grupo' => $sin_grupo,
+            'notasDB'   => $notasDB,
         ]);
     }
 }

@@ -107,12 +107,13 @@
                                         </td>
                                         @foreach ($trabajos as $trabajo)
                                             <td class="px-3 py-1.5 text-center">
-                                                @php $n = $notas[$trabajo->id][$alumno->id] ?? null; @endphp
+                                                @php $n = $notasDB[$trabajo->id][$alumno->id] ?? null; @endphp
                                                 <input
                                                     type="number"
                                                     step="0.01" min="0" max="10"
                                                     wire:model.lazy="notas.{{ $trabajo->id }}.{{ $alumno->id }}"
                                                     wire:change="guardarNota({{ $trabajo->id }}, {{ $alumno->id }})"
+                                                    value="{{ $n }}"
                                                     placeholder="—"
                                                     class="w-20 text-center rounded border-gray-300 text-sm focus:border-indigo-400 focus:ring-indigo-400
                                                         {{ ($n !== null && $n !== '') ? (floatval($n) >= 6 ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800') : '' }}"
@@ -136,12 +137,13 @@
                                         </td>
                                         @foreach ($trabajos as $trabajo)
                                             <td class="px-3 py-1.5 text-center">
-                                                @php $n = $notas[$trabajo->id][$alumno->id] ?? null; @endphp
+                                                @php $n = $notasDB[$trabajo->id][$alumno->id] ?? null; @endphp
                                                 <input
                                                     type="number"
                                                     step="0.01" min="0" max="10"
                                                     wire:model.lazy="notas.{{ $trabajo->id }}.{{ $alumno->id }}"
                                                     wire:change="guardarNota({{ $trabajo->id }}, {{ $alumno->id }})"
+                                                    value="{{ $n }}"
                                                     placeholder="—"
                                                     class="w-20 text-center rounded border-gray-300 text-sm focus:border-indigo-400 focus:ring-indigo-400
                                                         {{ ($n !== null && $n !== '') ? (floatval($n) >= 6 ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800') : '' }}"
