@@ -179,16 +179,14 @@ class GestionNotas extends Component
         $ciclo    = $this->ciclo_id ? CicloLectivo::with('trabajos')->find($this->ciclo_id) : null;
         $trabajos = $ciclo?->trabajos ?? collect();
 
-        // Recargar notas en cada render para que siempre estén sincronizadas
+        // Cargar notas desde DB en cada render
         if ($this->ciclo_id) {
+            $this->notas         = [];
+            $this->observaciones = [];
             $registros = NotaAlumno::where('ciclo_lectivo_id', $this->ciclo_id)->get();
             foreach ($registros as $r) {
-                if (!isset($this->notas[$r->trabajo_evaluable_id][$r->user_id]) || $this->notas[$r->trabajo_evaluable_id][$r->user_id] === '') {
-                    $this->notas[$r->trabajo_evaluable_id][$r->user_id] = $r->nota !== null ? (string) $r->nota : '';
-                }
-                if (!isset($this->observaciones[$r->trabajo_evaluable_id][$r->user_id])) {
-                    $this->observaciones[$r->trabajo_evaluable_id][$r->user_id] = $r->observaciones ?? '';
-                }
+                $this->notas[$r->trabajo_evaluable_id][$r->user_id]         = $r->nota !== null ? (string) $r->nota : '';
+                $this->observaciones[$r->trabajo_evaluable_id][$r->user_id] = $r->observaciones ?? '';
             }
         }
 
