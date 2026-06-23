@@ -155,8 +155,7 @@ class GestionNotas extends Component
         }
 
         $alumno = User::find($user_id);
-        $grupo  = $alumno?->grupos()->where('ciclo_lectivo_id', $this->ciclo_id)->first()
-                ?? $alumno?->grupos()->latest()->first();
+        $grupo  = $alumno?->grupos()->latest()->first();
 
         NotaAlumno::updateOrCreate(
             [
