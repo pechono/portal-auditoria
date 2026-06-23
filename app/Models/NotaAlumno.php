@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class NotaAlumno extends Model
 {
+    protected $table = 'notas_alumnos';
+
     protected $fillable = [
         'ciclo_lectivo_id', 'user_id', 'trabajo_evaluable_id',
         'grupo_id', 'caso_id', 'nota', 'observaciones',
