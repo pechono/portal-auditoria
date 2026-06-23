@@ -3,176 +3,164 @@
         <div class="mb-4 p-4 bg-green-100 text-green-700 rounded-lg">{{ session('mensaje') }}</div>
     @endif
 
-    <div class="flex gap-6">
-
-        {{-- Sidebar: ciclos --}}
-        <div class="w-64 shrink-0">
-            <div class="bg-white rounded-lg shadow">
-                <div class="px-4 py-3 border-b border-gray-200 flex justify-between items-center">
-                    <h3 class="text-sm font-semibold text-gray-800">Ciclos lectivos</h3>
-                    <button wire:click="abrirModalCiclo()"
-                        class="px-2 py-1 text-xs bg-indigo-600 text-white rounded hover:bg-indigo-700">
-                        + Nuevo
-                    </button>
-                </div>
-                <div class="divide-y divide-gray-100">
-                    @forelse ($ciclos as $c)
-                        <div wire:click="seleccionarCiclo({{ $c->id }})"
-                            class="px-4 py-3 cursor-pointer hover:bg-gray-50 {{ $ciclo_id === $c->id ? 'bg-indigo-50 border-l-4 border-indigo-500' : '' }}">
-                            <div class="flex justify-between items-center">
-                                <div>
-                                    <p class="text-sm font-medium text-gray-900">{{ $c->nombre }}</p>
-                                    <p class="text-xs text-gray-400">{{ $c->anio }}</p>
-                                </div>
-                                <div class="flex items-center gap-1">
-                                    @if ($c->activo)
-                                        <span class="text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full">Activo</span>
-                                    @endif
-                                    <button wire:click.stop="abrirModalCiclo({{ $c->id }})"
-                                        class="text-gray-400 hover:text-gray-600 text-xs">✎</button>
-                                </div>
-                            </div>
-                        </div>
-                    @empty
-                        <p class="px-4 py-3 text-xs text-gray-400">Sin ciclos creados.</p>
-                    @endforelse
-                </div>
-            </div>
+    {{-- Ciclos arriba --}}
+    <div class="bg-white rounded-lg shadow mb-4">
+        <div class="px-6 py-3 border-b border-gray-200 flex justify-between items-center">
+            <h3 class="text-sm font-semibold text-gray-700">Ciclo lectivo</h3>
+            <button wire:click="abrirModalCiclo()"
+                class="px-3 py-1 text-xs bg-indigo-600 text-white rounded hover:bg-indigo-700">
+                + Nuevo ciclo
+            </button>
         </div>
-
-        {{-- Panel principal --}}
-        <div class="flex-1 min-w-0">
-            @if (!$ciclo)
-                <div class="bg-white rounded-lg shadow p-10 text-center text-gray-400">
-                    Seleccioná o creá un ciclo lectivo para comenzar.
-                </div>
-            @else
-                {{-- Header ciclo --}}
-                <div class="bg-white rounded-lg shadow px-6 py-4 mb-4 flex justify-between items-center">
-                    <div>
-                        <h2 class="text-lg font-semibold text-gray-800">{{ $ciclo->nombre }}</h2>
-                        @if ($ciclo->observaciones)
-                            <p class="text-xs text-gray-400 mt-0.5">{{ $ciclo->observaciones }}</p>
+        <div class="flex flex-wrap gap-2 px-6 py-3">
+            @forelse ($ciclos as $c)
+                <div class="flex items-center gap-1">
+                    <button wire:click="seleccionarCiclo({{ $c->id }})"
+                        class="px-4 py-1.5 text-sm rounded-full border transition
+                            {{ $ciclo_id === $c->id
+                                ? 'bg-indigo-600 text-white border-indigo-600'
+                                : 'bg-white text-gray-600 border-gray-300 hover:border-indigo-400' }}">
+                        {{ $c->nombre }}
+                        @if ($c->activo)
+                            <span class="ml-1 text-xs opacity-70">●</span>
                         @endif
-                    </div>
-                    <button wire:click="abrirModalTrabajo()"
-                        class="px-3 py-2 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
-                        + Agregar columna
                     </button>
+                    <button wire:click="abrirModalCiclo({{ $c->id }})"
+                        class="text-gray-400 hover:text-gray-600 text-xs px-1">✎</button>
                 </div>
-
-                @if ($trabajos->isEmpty())
-                    <div class="bg-white rounded-lg shadow p-8 text-center text-gray-400">
-                        Todavía no hay trabajos para este ciclo. Agregá una columna para empezar (ej: "TP1", "Parcial Teórico").
-                    </div>
-                @elseif ($grupos->isEmpty() && $sin_grupo->isEmpty())
-                    <div class="bg-white rounded-lg shadow p-8 text-center text-gray-400">
-                        No hay alumnos registrados.
-                    </div>
-                @else
-                    {{-- Grilla de notas --}}
-                    <div class="bg-white rounded-lg shadow overflow-x-auto">
-                        <table class="min-w-full text-sm">
-                            <thead class="bg-gray-50 border-b border-gray-200">
-                                <tr>
-                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 sticky left-0 bg-gray-50 z-10 min-w-[200px]">
-                                        Grupo / Alumno
-                                    </th>
-                                    @foreach ($trabajos as $trabajo)
-                                        <th class="px-3 py-3 text-center text-xs font-semibold text-gray-600 min-w-[130px]">
-                                            <div class="flex flex-col items-center gap-1">
-                                                <span>{{ $trabajo->nombre }}</span>
-                                                <div class="flex gap-1">
-                                                    <button wire:click="abrirModalTrabajo({{ $trabajo->id }})"
-                                                        class="text-gray-400 hover:text-indigo-600 text-xs">✎</button>
-                                                    <button wire:click="eliminarTrabajo({{ $trabajo->id }})"
-                                                        wire:confirm="¿Eliminar '{{ $trabajo->nombre }}' y todas sus notas?"
-                                                        class="text-gray-400 hover:text-red-600 text-xs">✕</button>
-                                                </div>
-                                            </div>
-                                        </th>
-                                    @endforeach
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-100">
-                                @foreach ($grupos as $grupo)
-                                    {{-- Fila cabecera del grupo --}}
-                                    <tr class="bg-indigo-50">
-                                        <td colspan="{{ $trabajos->count() + 1 }}" class="px-4 py-2 sticky left-0 bg-indigo-50 z-10">
-                                            <span class="text-xs font-bold text-indigo-700 uppercase tracking-wide">
-                                                {{ $grupo->nombre }}
-                                            </span>
-                                            @if ($grupo->caso)
-                                                <span class="ml-2 text-xs text-indigo-400">— {{ $grupo->caso->nombre }}</span>
-                                            @endif
-                                        </td>
-                                    </tr>
-                                    {{-- Filas de alumnos del grupo --}}
-                                    @foreach ($grupo->usuarios as $alumno)
-                                        <tr class="hover:bg-gray-50">
-                                            <td class="px-4 py-2 pl-8 text-gray-800 sticky left-0 bg-white z-10">
-                                                {{ $alumno->apellido }}, {{ $alumno->nombre }}
-                                            </td>
-                                            @foreach ($trabajos as $trabajo)
-                                                <td class="px-3 py-2 text-center">
-                                                    @php $n = $notas[$trabajo->id][$alumno->id] ?? null; @endphp
-                                                    <input
-                                                        type="number"
-                                                        step="0.01"
-                                                        min="0"
-                                                        max="10"
-                                                        wire:model.lazy="notas.{{ $trabajo->id }}.{{ $alumno->id }}"
-                                                        wire:change="guardarNota({{ $trabajo->id }}, {{ $alumno->id }})"
-                                                        placeholder="—"
-                                                        class="w-20 text-center rounded border-gray-300 text-sm focus:border-indigo-400 focus:ring-indigo-400 {{ ($n !== null && $n !== '') ? (floatval($n) >= 6 ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800') : '' }}"
-                                                    >
-                                                </td>
-                                            @endforeach
-                                        </tr>
-                                    @endforeach
-                                @endforeach
-
-                                {{-- Alumnos sin grupo --}}
-                                @if ($sin_grupo->isNotEmpty())
-                                    <tr class="bg-gray-100">
-                                        <td colspan="{{ $trabajos->count() + 1 }}" class="px-4 py-2 sticky left-0 bg-gray-100 z-10">
-                                            <span class="text-xs font-bold text-gray-500 uppercase tracking-wide">Sin grupo asignado</span>
-                                        </td>
-                                    </tr>
-                                    @foreach ($sin_grupo as $alumno)
-                                        <tr class="hover:bg-gray-50">
-                                            <td class="px-4 py-2 pl-8 text-gray-800 sticky left-0 bg-white z-10">
-                                                {{ $alumno->apellido }}, {{ $alumno->nombre }}
-                                            </td>
-                                            @foreach ($trabajos as $trabajo)
-                                                <td class="px-3 py-2 text-center">
-                                                    @php $n = $notas[$trabajo->id][$alumno->id] ?? null; @endphp
-                                                    <input
-                                                        type="number"
-                                                        step="0.01"
-                                                        min="0"
-                                                        max="10"
-                                                        wire:model.lazy="notas.{{ $trabajo->id }}.{{ $alumno->id }}"
-                                                        wire:change="guardarNota({{ $trabajo->id }}, {{ $alumno->id }})"
-                                                        placeholder="—"
-                                                        class="w-20 text-center rounded border-gray-300 text-sm focus:border-indigo-400 focus:ring-indigo-400 {{ ($n !== null && $n !== '') ? (floatval($n) >= 6 ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800') : '' }}"
-                                                    >
-                                                </td>
-                                            @endforeach
-                                        </tr>
-                                    @endforeach
-                                @endif
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <p class="text-xs text-gray-400 mt-2 text-right">
-                        Las notas se guardan automáticamente al salir del campo. Escala 0–10. Verde ≥ 6, rojo &lt; 6.
-                    </p>
-                @endif
-            @endif
+            @empty
+                <p class="text-sm text-gray-400">Sin ciclos creados. Creá uno para empezar.</p>
+            @endforelse
         </div>
     </div>
+
+    @if (!$ciclo)
+        <div class="bg-white rounded-lg shadow p-10 text-center text-gray-400">
+            Seleccioná o creá un ciclo lectivo para comenzar.
+        </div>
+    @else
+        {{-- Header ciclo seleccionado --}}
+        <div class="bg-white rounded-lg shadow px-6 py-4 mb-4 flex justify-between items-center">
+            <div>
+                <h2 class="text-lg font-semibold text-gray-800">{{ $ciclo->nombre }}</h2>
+                @if ($ciclo->observaciones)
+                    <p class="text-xs text-gray-400 mt-0.5">{{ $ciclo->observaciones }}</p>
+                @endif
+            </div>
+            <button wire:click="abrirModalTrabajo()"
+                class="px-3 py-2 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+                + Agregar columna
+            </button>
+        </div>
+
+        @if ($trabajos->isEmpty())
+            <div class="bg-white rounded-lg shadow p-8 text-center text-gray-400">
+                Todavía no hay columnas para este ciclo. Agregá una (ej: "TP1", "Parcial Teórico").
+            </div>
+        @elseif ($grupos->isEmpty() && $sin_grupo->isEmpty())
+            <div class="bg-white rounded-lg shadow p-8 text-center text-gray-400">
+                No hay alumnos registrados.
+            </div>
+        @else
+            {{-- Grilla --}}
+            <div class="bg-white rounded-lg shadow">
+                <div class="overflow-x-auto w-full">
+                    <table class="text-sm border-collapse" style="min-width: max-content; width: 100%;">
+                        <thead class="bg-gray-50 border-b border-gray-200">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 w-56 min-w-[220px]">
+                                    Grupo / Alumno
+                                </th>
+                                @foreach ($trabajos as $trabajo)
+                                    <th class="px-3 py-3 text-center text-xs font-semibold text-gray-600 w-32 min-w-[120px]">
+                                        <div class="flex flex-col items-center gap-1">
+                                            <span>{{ $trabajo->nombre }}</span>
+                                            <div class="flex gap-1">
+                                                <button wire:click="abrirModalTrabajo({{ $trabajo->id }})"
+                                                    class="text-gray-400 hover:text-indigo-600 text-xs">✎</button>
+                                                <button wire:click="eliminarTrabajo({{ $trabajo->id }})"
+                                                    wire:confirm="¿Eliminar '{{ $trabajo->nombre }}' y todas sus notas?"
+                                                    class="text-gray-400 hover:text-red-600 text-xs">✕</button>
+                                            </div>
+                                        </div>
+                                    </th>
+                                @endforeach
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($grupos as $grupo)
+                                {{-- Fila grupo --}}
+                                <tr class="bg-indigo-50 border-t border-indigo-100">
+                                    <td colspan="{{ $trabajos->count() + 1 }}" class="px-4 py-2">
+                                        <span class="text-xs font-bold text-indigo-700 uppercase tracking-wide">
+                                            {{ $grupo->nombre }}
+                                        </span>
+                                        @if ($grupo->caso)
+                                            <span class="ml-2 text-xs text-indigo-400">— {{ $grupo->caso->nombre }}</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                                @foreach ($grupo->usuarios as $alumno)
+                                    <tr class="border-t border-gray-100 hover:bg-gray-50">
+                                        <td class="px-4 py-2 pl-8 text-gray-800 whitespace-nowrap">
+                                            {{ $alumno->apellido }}, {{ $alumno->nombre }}
+                                        </td>
+                                        @foreach ($trabajos as $trabajo)
+                                            <td class="px-3 py-1.5 text-center">
+                                                @php $n = $notas[$trabajo->id][$alumno->id] ?? null; @endphp
+                                                <input
+                                                    type="number"
+                                                    step="0.01" min="0" max="10"
+                                                    wire:model.lazy="notas.{{ $trabajo->id }}.{{ $alumno->id }}"
+                                                    wire:change="guardarNota({{ $trabajo->id }}, {{ $alumno->id }})"
+                                                    placeholder="—"
+                                                    class="w-20 text-center rounded border-gray-300 text-sm focus:border-indigo-400 focus:ring-indigo-400
+                                                        {{ ($n !== null && $n !== '') ? (floatval($n) >= 6 ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800') : '' }}"
+                                                >
+                                            </td>
+                                        @endforeach
+                                    </tr>
+                                @endforeach
+                            @endforeach
+
+                            @if ($sin_grupo->isNotEmpty())
+                                <tr class="bg-gray-100 border-t border-gray-200">
+                                    <td colspan="{{ $trabajos->count() + 1 }}" class="px-4 py-2">
+                                        <span class="text-xs font-bold text-gray-500 uppercase tracking-wide">Sin grupo asignado</span>
+                                    </td>
+                                </tr>
+                                @foreach ($sin_grupo as $alumno)
+                                    <tr class="border-t border-gray-100 hover:bg-gray-50">
+                                        <td class="px-4 py-2 pl-8 text-gray-800 whitespace-nowrap">
+                                            {{ $alumno->apellido }}, {{ $alumno->nombre }}
+                                        </td>
+                                        @foreach ($trabajos as $trabajo)
+                                            <td class="px-3 py-1.5 text-center">
+                                                @php $n = $notas[$trabajo->id][$alumno->id] ?? null; @endphp
+                                                <input
+                                                    type="number"
+                                                    step="0.01" min="0" max="10"
+                                                    wire:model.lazy="notas.{{ $trabajo->id }}.{{ $alumno->id }}"
+                                                    wire:change="guardarNota({{ $trabajo->id }}, {{ $alumno->id }})"
+                                                    placeholder="—"
+                                                    class="w-20 text-center rounded border-gray-300 text-sm focus:border-indigo-400 focus:ring-indigo-400
+                                                        {{ ($n !== null && $n !== '') ? (floatval($n) >= 6 ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800') : '' }}"
+                                                >
+                                            </td>
+                                        @endforeach
+                                    </tr>
+                                @endforeach
+                            @endif
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <p class="text-xs text-gray-400 mt-2 text-right">
+                Las notas se guardan al salir del campo. Escala 0–10. Verde ≥ 6, rojo &lt; 6.
+            </p>
+        @endif
+    @endif
 
     {{-- Modal ciclo --}}
     @if ($mostrarModalCiclo)
@@ -200,7 +188,7 @@
                         <label class="block text-sm font-medium text-gray-700 mb-1">Observaciones <span class="text-gray-400 font-normal">(opcional)</span></label>
                         <textarea wire:model="ciclo_obs" rows="2"
                             class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500"
-                            placeholder="Notas adicionales sobre este ciclo..."></textarea>
+                            placeholder="Notas adicionales..."></textarea>
                     </div>
                 </div>
                 <div class="flex justify-end gap-3 mt-6">
