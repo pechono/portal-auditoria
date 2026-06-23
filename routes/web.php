@@ -53,6 +53,10 @@ Route::middleware(['auth', 'es.docente'])
         return view('docente.informe');
     })->name('informe');
 
+    Route::get('/notas', function () {
+        return view('docente.notas');
+    })->name('notas');
+
 });
 
 // ─────────────────────────────────────────
