@@ -65,7 +65,7 @@
                     <div class="bg-white rounded-lg shadow p-8 text-center text-gray-400">
                         Todavía no hay trabajos para este ciclo. Agregá una columna para empezar (ej: "TP1", "Parcial Teórico").
                     </div>
-                @elseif ($alumnos->isEmpty())
+                @elseif ($grupos->isEmpty() && $sin_grupo->isEmpty())
                     <div class="bg-white rounded-lg shadow p-8 text-center text-gray-400">
                         No hay alumnos registrados.
                     </div>
@@ -75,8 +75,8 @@
                         <table class="min-w-full text-sm">
                             <thead class="bg-gray-50 border-b border-gray-200">
                                 <tr>
-                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 sticky left-0 bg-gray-50 z-10 min-w-[180px]">
-                                        Alumno
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 sticky left-0 bg-gray-50 z-10 min-w-[200px]">
+                                        Grupo / Alumno
                                     </th>
                                     @foreach ($trabajos as $trabajo)
                                         <th class="px-3 py-3 text-center text-xs font-semibold text-gray-600 min-w-[130px]">
@@ -95,31 +95,73 @@
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-100">
-                                @foreach ($alumnos as $alumno)
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-4 py-2 font-medium text-gray-900 sticky left-0 bg-white z-10">
-                                            {{ $alumno->apellido }}, {{ $alumno->nombre }}
+                                @foreach ($grupos as $grupo)
+                                    {{-- Fila cabecera del grupo --}}
+                                    <tr class="bg-indigo-50">
+                                        <td colspan="{{ $trabajos->count() + 1 }}" class="px-4 py-2 sticky left-0 bg-indigo-50 z-10">
+                                            <span class="text-xs font-bold text-indigo-700 uppercase tracking-wide">
+                                                {{ $grupo->nombre }}
+                                            </span>
+                                            @if ($grupo->caso)
+                                                <span class="ml-2 text-xs text-indigo-400">— {{ $grupo->caso->nombre }}</span>
+                                            @endif
                                         </td>
-                                        @foreach ($trabajos as $trabajo)
-                                            <td class="px-3 py-2 text-center">
-                                                <input
-                                                    type="number"
-                                                    step="0.01"
-                                                    min="0"
-                                                    max="10"
-                                                    wire:model.lazy="notas.{{ $trabajo->id }}.{{ $alumno->id }}"
-                                                    wire:change="guardarNota({{ $trabajo->id }}, {{ $alumno->id }})"
-                                                    placeholder="—"
-                                                    class="w-20 text-center rounded border-gray-300 text-sm focus:border-indigo-400 focus:ring-indigo-400
-                                                        @php
-                                                            $n = $notas[$trabajo->id][$alumno->id] ?? null;
-                                                        @endphp
-                                                        {{ ($n !== null && $n !== '') ? (floatval($n) >= 6 ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800') : '' }}"
-                                                >
-                                            </td>
-                                        @endforeach
                                     </tr>
+                                    {{-- Filas de alumnos del grupo --}}
+                                    @foreach ($grupo->usuarios as $alumno)
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-4 py-2 pl-8 text-gray-800 sticky left-0 bg-white z-10">
+                                                {{ $alumno->apellido }}, {{ $alumno->nombre }}
+                                            </td>
+                                            @foreach ($trabajos as $trabajo)
+                                                <td class="px-3 py-2 text-center">
+                                                    @php $n = $notas[$trabajo->id][$alumno->id] ?? null; @endphp
+                                                    <input
+                                                        type="number"
+                                                        step="0.01"
+                                                        min="0"
+                                                        max="10"
+                                                        wire:model.lazy="notas.{{ $trabajo->id }}.{{ $alumno->id }}"
+                                                        wire:change="guardarNota({{ $trabajo->id }}, {{ $alumno->id }})"
+                                                        placeholder="—"
+                                                        class="w-20 text-center rounded border-gray-300 text-sm focus:border-indigo-400 focus:ring-indigo-400 {{ ($n !== null && $n !== '') ? (floatval($n) >= 6 ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800') : '' }}"
+                                                    >
+                                                </td>
+                                            @endforeach
+                                        </tr>
+                                    @endforeach
                                 @endforeach
+
+                                {{-- Alumnos sin grupo --}}
+                                @if ($sin_grupo->isNotEmpty())
+                                    <tr class="bg-gray-100">
+                                        <td colspan="{{ $trabajos->count() + 1 }}" class="px-4 py-2 sticky left-0 bg-gray-100 z-10">
+                                            <span class="text-xs font-bold text-gray-500 uppercase tracking-wide">Sin grupo asignado</span>
+                                        </td>
+                                    </tr>
+                                    @foreach ($sin_grupo as $alumno)
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-4 py-2 pl-8 text-gray-800 sticky left-0 bg-white z-10">
+                                                {{ $alumno->apellido }}, {{ $alumno->nombre }}
+                                            </td>
+                                            @foreach ($trabajos as $trabajo)
+                                                <td class="px-3 py-2 text-center">
+                                                    @php $n = $notas[$trabajo->id][$alumno->id] ?? null; @endphp
+                                                    <input
+                                                        type="number"
+                                                        step="0.01"
+                                                        min="0"
+                                                        max="10"
+                                                        wire:model.lazy="notas.{{ $trabajo->id }}.{{ $alumno->id }}"
+                                                        wire:change="guardarNota({{ $trabajo->id }}, {{ $alumno->id }})"
+                                                        placeholder="—"
+                                                        class="w-20 text-center rounded border-gray-300 text-sm focus:border-indigo-400 focus:ring-indigo-400 {{ ($n !== null && $n !== '') ? (floatval($n) >= 6 ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800') : '' }}"
+                                                    >
+                                                </td>
+                                            @endforeach
+                                        </tr>
+                                    @endforeach
+                                @endif
                             </tbody>
                         </table>
                     </div>

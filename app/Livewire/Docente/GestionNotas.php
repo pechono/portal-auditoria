@@ -179,16 +179,27 @@ class GestionNotas extends Component
         $ciclo    = $this->ciclo_id ? CicloLectivo::with('trabajos')->find($this->ciclo_id) : null;
         $trabajos = $ciclo?->trabajos ?? collect();
 
-        $alumnos = User::where('rol', 'alumno')
-            ->orderBy('apellido')
+        // Alumnos agrupados por grupo
+        $grupos = Grupo::with(['usuarios' => function ($q) {
+                $q->where('rol', 'alumno')->orderBy('apellido');
+            }, 'caso'])
             ->orderBy('nombre')
+            ->get()
+            ->filter(fn($g) => $g->usuarios->isNotEmpty());
+
+        // Alumnos sin grupo
+        $ids_con_grupo = $grupos->flatMap(fn($g) => $g->usuarios->pluck('id'));
+        $sin_grupo = User::where('rol', 'alumno')
+            ->whereNotIn('id', $ids_con_grupo)
+            ->orderBy('apellido')
             ->get();
 
         return view('livewire.docente.gestion-notas', [
-            'ciclos'   => $ciclos,
-            'ciclo'    => $ciclo,
-            'trabajos' => $trabajos,
-            'alumnos'  => $alumnos,
+            'ciclos'    => $ciclos,
+            'ciclo'     => $ciclo,
+            'trabajos'  => $trabajos,
+            'grupos'    => $grupos,
+            'sin_grupo' => $sin_grupo,
         ]);
     }
 }
