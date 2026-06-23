@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class CicloLectivo extends Model
 {
+    protected $table = 'ciclos_lectivos';
+
     protected $fillable = ['nombre', 'anio', 'observaciones', 'activo'];
 
     public function trabajos()
