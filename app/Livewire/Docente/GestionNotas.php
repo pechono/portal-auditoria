@@ -12,24 +12,20 @@ use App\Models\Grupo;
 class GestionNotas extends Component
 {
     // Ciclo
-    public ?int $ciclo_id         = null;
+    public ?int $ciclo_id          = null;
     public bool $mostrarModalCiclo = false;
-    public string $ciclo_nombre   = '';
-    public string $ciclo_anio     = '';
-    public string $ciclo_obs      = '';
-    public ?int $editando_ciclo   = null;
+    public string $ciclo_nombre    = '';
+    public string $ciclo_anio      = '';
+    public string $ciclo_obs       = '';
+    public ?int $editando_ciclo    = null;
 
     // Trabajo evaluable
     public bool $mostrarModalTrabajo = false;
     public string $trabajo_nombre    = '';
     public ?int $editando_trabajo    = null;
 
-    // Notas editables en la grilla (sincronizadas con Livewire)
-    public array $notas        = [];
-    public array $observaciones = [];
-
-    // Notas guardadas en DB (solo lectura, no se sincronizan con frontend)
-    protected array $notasDB = [];
+    // Notas editables en la grilla [trabajo_id][user_id] => valor
+    public array $notas = [];
 
     public function mount(): void
     {
@@ -121,7 +117,6 @@ class GestionNotas extends Component
         }
 
         $this->mostrarModalTrabajo = false;
-        $this->cargarNotas();
     }
 
     public function eliminarTrabajo(int $id): void
@@ -131,75 +126,62 @@ class GestionNotas extends Component
     }
 
     // ── Notas ───────────────────────────────────────
-    private function cargarNotas(): void
+    public function cargarNotas(): void
     {
+        $this->notas = [];
         if (!$this->ciclo_id) return;
 
         $registros = NotaAlumno::where('ciclo_lectivo_id', $this->ciclo_id)->get();
-
-        $this->notas        = [];
-        $this->observaciones = [];
-
         foreach ($registros as $r) {
-            $this->notas[$r->trabajo_evaluable_id][$r->user_id]         = $r->nota !== null ? (string) $r->nota : '';
-            $this->observaciones[$r->trabajo_evaluable_id][$r->user_id] = $r->observaciones ?? '';
+            $this->notas[$r->trabajo_evaluable_id][$r->user_id] = $r->nota !== null ? (string) $r->nota : '';
         }
     }
 
-    public function guardarNota(int $trabajo_id, int $user_id): void
+    public function guardarTodasLasNotas(): void
     {
-        $nota = $this->notas[$trabajo_id][$user_id] ?? null;
-        $obs  = $this->observaciones[$trabajo_id][$user_id] ?? null;
+        $alumnos = User::where('rol', 'alumno')->get()->keyBy('id');
 
-        if ($nota !== null && $nota !== '') {
-            $this->validate([
-                "notas.{$trabajo_id}.{$user_id}" => ['nullable', 'numeric', 'min:0', 'max:10'],
-            ]);
+        foreach ($this->notas as $trabajo_id => $porAlumno) {
+            foreach ($porAlumno as $user_id => $nota) {
+                $nota = trim((string) $nota);
+
+                if ($nota !== '' && (!is_numeric($nota) || floatval($nota) < 0 || floatval($nota) > 10)) {
+                    continue;
+                }
+
+                $alumno = $alumnos->get($user_id);
+                $grupo  = $alumno?->grupos()->latest()->first();
+
+                NotaAlumno::updateOrCreate(
+                    [
+                        'ciclo_lectivo_id'     => $this->ciclo_id,
+                        'user_id'              => $user_id,
+                        'trabajo_evaluable_id' => $trabajo_id,
+                    ],
+                    [
+                        'nota'     => $nota !== '' ? floatval($nota) : null,
+                        'grupo_id' => $grupo?->id,
+                        'caso_id'  => $grupo?->caso_id,
+                    ]
+                );
+            }
         }
 
-        $alumno = User::find($user_id);
-        $grupo  = $alumno?->grupos()->latest()->first();
-
-        NotaAlumno::updateOrCreate(
-            [
-                'ciclo_lectivo_id'    => $this->ciclo_id,
-                'user_id'             => $user_id,
-                'trabajo_evaluable_id' => $trabajo_id,
-            ],
-            [
-                'nota'         => ($nota !== '' && $nota !== null) ? $nota : null,
-                'observaciones'=> $obs ?: null,
-                'grupo_id'     => $grupo?->id,
-                'caso_id'      => $grupo?->caso_id,
-            ]
-        );
+        $this->cargarNotas();
+        session()->flash('mensaje', 'Notas guardadas correctamente.');
     }
 
     public function render()
     {
-        $ciclos = CicloLectivo::orderBy('anio', 'desc')->get();
-
+        $ciclos   = CicloLectivo::orderBy('anio', 'desc')->get();
         $ciclo    = $this->ciclo_id ? CicloLectivo::with('trabajos')->find($this->ciclo_id) : null;
         $trabajos = $ciclo?->trabajos ?? collect();
 
-        // Cargar notas desde DB para mostrar en la grilla
-        $notasDB = [];
-        if ($this->ciclo_id) {
-            $registros = NotaAlumno::where('ciclo_lectivo_id', $this->ciclo_id)->get();
-            foreach ($registros as $r) {
-                $notasDB[$r->trabajo_evaluable_id][$r->user_id] = $r->nota !== null ? (string) $r->nota : '';
-            }
-        }
-
-        // Alumnos agrupados por grupo
-        $grupos = Grupo::with(['usuarios' => function ($q) {
-                $q->where('rol', 'alumno')->orderBy('apellido');
-            }, 'caso'])
+        $grupos = Grupo::with(['usuarios' => fn($q) => $q->where('rol', 'alumno')->orderBy('apellido'), 'caso'])
             ->orderBy('nombre')
             ->get()
             ->filter(fn($g) => $g->usuarios->isNotEmpty());
 
-        // Alumnos sin grupo
         $ids_con_grupo = $grupos->flatMap(fn($g) => $g->usuarios->pluck('id'));
         $sin_grupo = User::where('rol', 'alumno')
             ->whereNotIn('id', $ids_con_grupo)
@@ -212,7 +194,6 @@ class GestionNotas extends Component
             'trabajos'  => $trabajos,
             'grupos'    => $grupos,
             'sin_grupo' => $sin_grupo,
-            'notasDB'   => $notasDB,
         ]);
     }
 }
