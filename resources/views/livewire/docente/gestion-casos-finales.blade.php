@@ -243,6 +243,13 @@
                                     class="w-full rounded-lg border-gray-300 text-sm"
                                     placeholder="Qué información puede brindar..."></textarea>
                             </div>
+                            <div class="col-span-2">
+                                <label class="block text-xs font-medium text-gray-700 mb-1">Documento de entrevista (PDF, DOC, DOCX — opcional)</label>
+                                <input type="file" wire:model="ent_archivo" accept=".pdf,.doc,.docx"
+                                    class="block w-full text-sm text-gray-700 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100">
+                                <div wire:loading wire:target="ent_archivo" class="text-xs text-gray-400 mt-1">Subiendo...</div>
+                                @error('ent_archivo') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
+                            </div>
                         </div>
                     </div>
                     <div class="px-6 pb-5 flex justify-end gap-3">
@@ -344,9 +351,15 @@
                                                 <span class="text-gray-400"> ({{ $ent->area }})</span>
                                             @endif
                                         </div>
-                                        <button wire:click="eliminarEntrevistado({{ $ent->id }})"
-                                            wire:confirm="¿Eliminar este entrevistado?"
-                                            class="text-red-400 hover:text-red-600">✕</button>
+                                        <div class="flex items-center gap-2">
+                                            @if($ent->archivo_path)
+                                                <a href="{{ asset('uploads/' . $ent->archivo_path) }}" target="_blank"
+                                                    class="text-emerald-500 hover:underline">↓</a>
+                                            @endif
+                                            <button wire:click="eliminarEntrevistado({{ $ent->id }})"
+                                                wire:confirm="¿Eliminar este entrevistado?"
+                                                class="text-red-400 hover:text-red-600">✕</button>
+                                        </div>
                                     </div>
                                 @endforeach
                             </div>

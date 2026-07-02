@@ -24,7 +24,7 @@ class Repositorio extends Component
     protected function rules(): array
     {
         return [
-            'archivo'              => ['required', 'file', 'mimes:pdf,doc,docx', 'max:20480'],
+            'archivo'              => ['required', 'file', 'mimes:pdf,doc,docx,vnd.openxmlformats-officedocument.wordprocessingml.document', 'max:20480'],
             'nombre_personalizado' => ['required', 'string', 'min:3', 'max:100'],
             'categoria'            => ['required', 'in:documento,entrevista,otro'],
             'caso_id'              => ['nullable'],

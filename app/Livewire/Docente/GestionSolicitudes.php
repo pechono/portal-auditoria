@@ -58,7 +58,7 @@ class GestionSolicitudes extends Component
     public function updatedActa(): void
     {
     $this->validate([
-            'acta' => ['nullable', 'file', 'mimes:pdf,doc,docx', 'max:10240'],
+            'acta' => ['nullable', 'file', 'mimes:pdf,doc,docx,vnd.openxmlformats-officedocument.wordprocessingml.document', 'max:10240'],
         ]);
     } 
     public function procesarSolicitud(): void
@@ -68,7 +68,7 @@ class GestionSolicitudes extends Component
         // Caso especial: solo subir acta
         if ($this->accion === 'subir_acta') {
             $this->validate([
-                'acta' => ['required', 'file', 'mimes:pdf,doc,docx', 'max:10240'],
+                'acta' => ['required', 'file', 'mimes:pdf,doc,docx,vnd.openxmlformats-officedocument.wordprocessingml.document', 'max:10240'],
             ]);
             $extension = $this->acta->getClientOriginalExtension();
             $nombre    = \Str::slug('acta-' . $solicitud->grupo->nombre . '-' . now()->format('YmdHis')) . '.' . $extension;
@@ -84,13 +84,13 @@ class GestionSolicitudes extends Component
             $this->validate([
                 'recurso_id' => ['required', 'integer', 'min:1'],
                 'comentario' => ['nullable', 'string', 'max:500'],
-                'acta'       => ['nullable', 'file', 'mimes:pdf,doc,docx', 'max:10240'],
+                'acta'       => ['nullable', 'file', 'mimes:pdf,doc,docx,vnd.openxmlformats-officedocument.wordprocessingml.document', 'max:10240'],
             ]);
         } elseif ($this->accion === 'aprobar' && $solicitud->tipo === 'entrevista') {
             $this->validate([
                 'recurso_id' => ['required', 'integer', 'min:1'],
                 'comentario' => ['nullable', 'string', 'max:500'],
-                'acta'       => ['nullable', 'file', 'mimes:pdf,doc,docx', 'max:10240'],
+                'acta'       => ['nullable', 'file', 'mimes:pdf,doc,docx,vnd.openxmlformats-officedocument.wordprocessingml.document', 'max:10240'],
             ]);
         } else {
             $this->validate([

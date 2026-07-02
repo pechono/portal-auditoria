@@ -8,7 +8,7 @@ class CasoFinalEntrevistado extends Model
 {
     protected $table = 'caso_final_entrevistados';
 
-    protected $fillable = ['caso_final_id', 'nombre', 'cargo', 'area', 'descripcion_rol'];
+    protected $fillable = ['caso_final_id', 'nombre', 'cargo', 'area', 'descripcion_rol', 'archivo_path'];
 
     public function casoFinal()
     {

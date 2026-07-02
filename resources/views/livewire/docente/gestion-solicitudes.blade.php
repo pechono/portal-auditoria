@@ -422,7 +422,7 @@
                             <label class="block text-sm font-medium text-gray-700 mb-1">
                                 Archivo del acta (PDF, DOC o DOCX — máx. 10MB)
                             </label>
-                            <input type="file" wire:model="acta"
+                            <input type="file" wire:model="acta" accept=".pdf,.doc,.docx"
                                 class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4
                                        file:rounded file:border-0 file:text-sm file:font-medium
                                        file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
@@ -481,7 +481,7 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-1">
                                     Acta de entrevista (opcional — podés subirla después)
                                 </label>
-                                <input type="file" wire:model="acta"
+                                <input type="file" wire:model="acta" accept=".pdf,.doc,.docx"
                                     class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4
                                            file:rounded file:border-0 file:text-sm file:font-medium
                                            file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">

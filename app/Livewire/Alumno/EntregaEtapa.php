@@ -18,7 +18,7 @@ class EntregaEtapa extends Component
     protected function rules(): array
     {
         return [
-            'archivo'  => ['required', 'file', 'mimes:pdf,doc,docx', 'max:10240'],
+            'archivo'  => ['required', 'file', 'mimes:pdf,doc,docx,vnd.openxmlformats-officedocument.wordprocessingml.document', 'max:10240'],
             'etapa_id' => ['required', 'integer', 'min:1'],
         ];
     }

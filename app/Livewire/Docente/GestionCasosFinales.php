@@ -37,6 +37,7 @@ class GestionCasosFinales extends Component
     public string $ent_cargo = '';
     public string $ent_area = '';
     public string $ent_descripcion = '';
+    public $ent_archivo;
 
     // Vista detalle/impresión
     public ?int $viendo_id = null;
@@ -113,7 +114,7 @@ class GestionCasosFinales extends Component
         $this->validate([
             'doc_titulo'    => 'required|string|max:255',
             'doc_descripcion' => 'nullable|string|max:255',
-            'doc_archivo'   => 'nullable|file|mimes:pdf,doc,docx|max:20480',
+            'doc_archivo'   => 'nullable|file|mimes:pdf,doc,docx,vnd.openxmlformats-officedocument.wordprocessingml.document|max:20480',
         ]);
 
         $path = null;
@@ -147,16 +148,25 @@ class GestionCasosFinales extends Component
         $this->ent_cargo       = '';
         $this->ent_area        = '';
         $this->ent_descripcion = '';
+        $this->ent_archivo     = null;
     }
 
     public function guardarEntrevistado(): void
     {
         $this->validate([
-            'ent_nombre' => 'required|string|max:255',
-            'ent_cargo'  => 'required|string|max:255',
-            'ent_area'   => 'nullable|string|max:255',
+            'ent_nombre'      => 'required|string|max:255',
+            'ent_cargo'       => 'required|string|max:255',
+            'ent_area'        => 'nullable|string|max:255',
             'ent_descripcion' => 'nullable|string',
+            'ent_archivo'     => 'nullable|file|mimes:pdf,doc,docx,vnd.openxmlformats-officedocument.wordprocessingml.document|max:20480',
         ]);
+
+        $path = null;
+        if ($this->ent_archivo) {
+            $ext    = $this->ent_archivo->getClientOriginalExtension();
+            $nombre = \Str::slug($this->ent_nombre . '-' . now()->format('YmdHis')) . '.' . $ext;
+            $path   = $this->ent_archivo->storeAs('casos-finales', $nombre, 'uploads');
+        }
 
         CasoFinalEntrevistado::create([
             'caso_final_id'  => $this->ent_caso_id,
@@ -164,6 +174,7 @@ class GestionCasosFinales extends Component
             'cargo'          => $this->ent_cargo,
             'area'           => $this->ent_area,
             'descripcion_rol'=> $this->ent_descripcion,
+            'archivo_path'   => $path,
         ]);
 
         $this->ent_caso_id = null;

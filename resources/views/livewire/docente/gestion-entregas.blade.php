@@ -107,65 +107,64 @@
                     </div>
                 </div>
 
-                {{-- Entregas del grupo --}}
-                <div class="divide-y divide-gray-100">
-                    @foreach($grupo->entregas->sortBy('etapa.numero') as $entrega)
-                        <div class="flex items-center justify-between px-6 py-3">
-                            <div class="flex items-center gap-3">
-                                {{-- Estado indicador --}}
-                                @php
-                                    $dot = match($entrega->estado) {
-                                        'aprobada'         => 'bg-green-500',
-                                        'enviada'          => 'bg-yellow-400',
-                                        'con_observaciones'=> 'bg-orange-400',
-                                        'rechazada'        => 'bg-red-500',
-                                        default            => 'bg-gray-300',
-                                    };
-                                @endphp
-                                <span class="w-2 h-2 rounded-full {{ $dot }} flex-shrink-0"></span>
-                                <div>
-                                    <p class="text-sm text-gray-800">
-                                        {{ $entrega->etapa->numero }}. {{ $entrega->etapa->nombre }}
-                                    </p>
-                                    <p class="text-xs text-gray-400">{{ $entrega->created_at->format('d/m/Y H:i') }}</p>
+                {{-- Entregas agrupadas por estado --}}
+                @php
+                    $orden_estados = ['enviada', 'con_observaciones', 'rechazada', 'aprobada'];
+                    $entregas_grupo = $grupo->entregas->sortBy('etapa.numero')->groupBy('estado');
+                    $config_estado = [
+                        'enviada'          => ['label' => 'Pendientes de revisión', 'header' => 'bg-yellow-50 text-yellow-700 border-yellow-200'],
+                        'con_observaciones'=> ['label' => 'Con observaciones',       'header' => 'bg-orange-50 text-orange-700 border-orange-200'],
+                        'rechazada'        => ['label' => 'Rechazadas',              'header' => 'bg-red-50 text-red-700 border-red-200'],
+                        'aprobada'         => ['label' => 'Aprobadas',               'header' => 'bg-green-50 text-green-700 border-green-200'],
+                    ];
+                @endphp
+                @foreach($orden_estados as $estado_grupo)
+                    @if($entregas_grupo->has($estado_grupo))
+                        <div class="border-t {{ $config_estado[$estado_grupo]['header'] }} border-opacity-50">
+                            <div class="px-6 py-1.5 text-xs font-semibold {{ $config_estado[$estado_grupo]['header'] }} border-b">
+                                {{ $config_estado[$estado_grupo]['label'] }} ({{ $entregas_grupo[$estado_grupo]->count() }})
+                            </div>
+                            @foreach($entregas_grupo[$estado_grupo] as $entrega)
+                                <div class="flex items-center justify-between px-6 py-3 border-t border-gray-100">
+                                    <div class="flex items-center gap-3">
+                                        @php
+                                            $dot = match($entrega->estado) {
+                                                'aprobada'         => 'bg-green-500',
+                                                'enviada'          => 'bg-yellow-400',
+                                                'con_observaciones'=> 'bg-orange-400',
+                                                'rechazada'        => 'bg-red-500',
+                                                default            => 'bg-gray-300',
+                                            };
+                                        @endphp
+                                        <span class="w-2 h-2 rounded-full {{ $dot }} flex-shrink-0"></span>
+                                        <div>
+                                            <p class="text-sm text-gray-800">
+                                                {{ $entrega->etapa->numero }}. {{ $entrega->etapa->nombre }}
+                                            </p>
+                                            <p class="text-xs text-gray-400">{{ $entrega->created_at->format('d/m/Y H:i') }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-3">
+                                        @if($entrega->nota !== null)
+                                            <span class="text-xs font-semibold text-indigo-600">{{ number_format($entrega->nota, 1) }}</span>
+                                        @endif
+                                        <a href="{{ asset('uploads/' . $entrega->archivo_path) }}" target="_blank"
+                                            class="text-xs text-gray-400 hover:text-indigo-600" title="Ver archivo">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+                                            </svg>
+                                        </a>
+                                        <button wire:click="abrirModal({{ $entrega->id }})"
+                                            class="px-3 py-1 text-xs rounded {{ $entrega->estado === 'enviada' ? 'bg-indigo-600 text-white hover:bg-indigo-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border' }}">
+                                            {{ $entrega->estado === 'enviada' ? 'Revisar' : 'Editar' }}
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="flex items-center gap-3">
-                                @php
-                                    $badge = match($entrega->estado) {
-                                        'aprobada'         => 'bg-green-100 text-green-700',
-                                        'enviada'          => 'bg-yellow-100 text-yellow-700',
-                                        'con_observaciones'=> 'bg-orange-100 text-orange-700',
-                                        'rechazada'        => 'bg-red-100 text-red-700',
-                                        default            => 'bg-gray-100 text-gray-500',
-                                    };
-                                    $label = match($entrega->estado) {
-                                        'aprobada'         => 'Aprobada',
-                                        'enviada'          => 'Pendiente',
-                                        'con_observaciones'=> 'Con obs.',
-                                        'rechazada'        => 'Rechazada',
-                                        default            => $entrega->estado,
-                                    };
-                                @endphp
-                                <span class="px-2 py-0.5 text-xs rounded-full {{ $badge }}">{{ $label }}</span>
-                                @if($entrega->nota !== null)
-                                    <span class="text-xs font-semibold text-indigo-600">{{ number_format($entrega->nota, 1) }}</span>
-                                @endif
-                                <a href="{{ asset('uploads/' . $entrega->archivo_path) }}" target="_blank"
-                                    class="text-xs text-gray-400 hover:text-indigo-600" title="Ver archivo">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
-                                    </svg>
-                                </a>
-                                <button wire:click="abrirModal({{ $entrega->id }})"
-                                    class="px-3 py-1 text-xs rounded {{ $entrega->estado === 'enviada' ? 'bg-indigo-600 text-white hover:bg-indigo-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border' }}">
-                                    {{ $entrega->estado === 'enviada' ? 'Revisar' : 'Editar' }}
-                                </button>
-                            </div>
+                            @endforeach
                         </div>
-                    @endforeach
-                </div>
+                    @endif
+                @endforeach
 
             </div>
         @empty
@@ -341,7 +340,7 @@
                                 <span class="text-gray-400">(subir uno nuevo lo reemplaza)</span>
                             </div>
                         @endif
-                        <input type="file" wire:model="devolucion"
+                        <input type="file" wire:model="devolucion" accept=".pdf,.doc,.docx"
                             class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4
                                    file:rounded file:border-0 file:text-sm file:font-medium
                                    file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">

@@ -25,7 +25,7 @@ class GestionEntregas extends Component
         return [
             'estado'     => ['required', 'in:aprobada,con_observaciones,rechazada'],
             'comentario' => ['nullable', 'string', 'max:1000'],
-            'devolucion' => ['nullable', 'file', 'mimes:pdf,doc,docx', 'max:10240'],
+            'devolucion' => ['nullable', 'file', 'mimes:pdf,doc,docx,vnd.openxmlformats-officedocument.wordprocessingml.document', 'max:10240'],
             'nota'       => ['nullable', 'numeric', 'min:0', 'max:10'],
         ];
     }

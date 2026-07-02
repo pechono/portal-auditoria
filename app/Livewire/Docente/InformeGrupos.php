@@ -61,7 +61,7 @@ class InformeGrupos extends Component
     public function subirDevolucionFinal(): void
     {
         $this->validate([
-            'devolucion_final' => ['required', 'file', 'mimes:pdf,doc,docx', 'max:20480'],
+            'devolucion_final' => ['required', 'file', 'mimes:pdf,doc,docx,vnd.openxmlformats-officedocument.wordprocessingml.document', 'max:20480'],
         ]);
 
         $grupo     = Grupo::find($this->subiendo_grupo_id);
