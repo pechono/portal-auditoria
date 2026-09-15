@@ -19,11 +19,8 @@
                         <x-nav-link :href="route('docente.dashboard')" :active="request()->routeIs('docente.dashboard')">
                             Dashboard
                         </x-nav-link>
-                        <x-nav-link :href="route('docente.alumnos')" :active="request()->routeIs('docente.alumnos')">
-                            Alumnos
-                        </x-nav-link>
-                        <x-nav-link :href="route('docente.grupos')" :active="request()->routeIs('docente.grupos')">
-                            Grupos
+                        <x-nav-link :href="route('docente.usuarios')" :active="request()->routeIs('docente.usuarios')">
+                            Usuarios
                         </x-nav-link>
                         <x-nav-link :href="route('docente.solicitudes')" :active="request()->routeIs('docente.solicitudes')">
                             <span class="flex items-center gap-1.5">
@@ -59,9 +56,6 @@
                         </x-nav-link>
                         <x-nav-link :href="route('docente.notas')" :active="request()->routeIs('docente.notas')">
                             Notas
-                        </x-nav-link>
-                        <x-nav-link :href="route('docente.docentes')" :active="request()->routeIs('docente.docentes')">
-                            Docentes
                         </x-nav-link>
                     @else
                         @php
@@ -146,11 +140,8 @@
                 <x-responsive-nav-link :href="route('docente.dashboard')" :active="request()->routeIs('docente.dashboard')">
                     Dashboard
                 </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('docente.alumnos')" :active="request()->routeIs('docente.alumnos')">
-                    Alumnos
-                </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('docente.grupos')" :active="request()->routeIs('docente.grupos')">
-                    Grupos
+                <x-responsive-nav-link :href="route('docente.usuarios')" :active="request()->routeIs('docente.usuarios')">
+                    Usuarios
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('docente.solicitudes')" :active="request()->routeIs('docente.solicitudes')">
                     <span class="flex items-center gap-1.5">
@@ -186,9 +177,6 @@
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('docente.notas')" :active="request()->routeIs('docente.notas')">
                     Notas
-                </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('docente.docentes')" :active="request()->routeIs('docente.docentes')">
-                    Docentes
                 </x-responsive-nav-link>
             @else
                 <x-responsive-nav-link :href="route('alumno.dashboard')" :active="request()->routeIs('alumno.dashboard')">

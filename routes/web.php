@@ -41,8 +41,12 @@ Route::middleware(['auth', 'es.docente'])
         return view('docente.casos');
     })->name('casos');
     
+    Route::get('/usuarios', function () {
+        return view('docente.usuarios');
+    })->name('usuarios');
+
     Route::get('/alumnos', function () {
-        return view('docente.alumnos');
+        return redirect()->route('docente.usuarios', ['tab' => 'alumnos']);
     })->name('alumnos');
 
     Route::get('/finales', function () {
@@ -58,7 +62,7 @@ Route::middleware(['auth', 'es.docente'])
     })->name('notas');
 
     Route::get('/docentes', function () {
-        return view('docente.docentes');
+        return redirect()->route('docente.usuarios', ['tab' => 'docentes']);
     })->name('docentes');
 
 });
