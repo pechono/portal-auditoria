@@ -5,7 +5,7 @@
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
                     <a href="{{ auth()->user()->rol === 'docente' ? route('docente.dashboard') : route('alumno.dashboard') }}">
-                        <x-application-logo class="block h-9 w-auto fill-current text-gray-800" />
+                        <img src="/icons/logo-transparent.png" alt="Portal Auditoría" class="block h-9 w-auto">
                     </a>
                 </div>
 
